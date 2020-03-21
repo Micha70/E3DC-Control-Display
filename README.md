@@ -1,3 +1,67 @@
+# E3DC-Control-Display
+Prinzipiell gelten alle Hinweise von Eberhard, s.u..
+
++ Installieren: git clone https://github.com/Micha70/E3DC-Control.git
++ verwendetes Display: https://www.amazon.de/gp/product/B078J5TS2G/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1
++ Anschluss Display:
+```
+TFT     PIN     RASPI Pin
+VCC     1       1 (3,3V)
+GND     2       6 (GND)
+SCL     7       23 (SCLK)
+SDA     6       19 (MOSI)
+RS/DC   5       18 (GPIO24)
+RES     4       22 (GPIO25)
+CS      3       24 (GPIO8)
+LED     8       Option ohne Helligkeitsregelung: Pin 17 3v3 Stromversorgung
+                Option mit Helligkeitsregelung (PWM): --> PIN12 (BCM18 PWM0)
+```
+Um das Display am Raspi betreiben zu können, muss die SPI aktiviert werden mit raspi-config! SPI ist standardmäßig deaktiviert.
+
+Option ohne Helligkeitregelung: Display kann direkt 1:1 angeschlossen werden
+
+Option mit Helligkeitsregelung(PWM): Treiberstufe erforderlich:
+
+```
+                                         5V
+                                         |
+                            2Ohm       __|
+                           _____     ||  |
+PIN12 (BCM18 PWM0)   -----|_____|--- ||->|
+                                     ||__
+                                         |
+                                         |
+                                         -
+                                        | |
+                                        | | 27Ohm
+                                         -
+                                         |
+                                         |------> Display (Pin 8)
+                    
+```
+
+PWM funktioniert nur wenn E3DC-Control-Display mit Sudo Rechten gestartet wird. Ansonsten wird nur zwischen 100% und 0% umgeschaltet.
+In io_BCM2835.h stehen die Schaltzeitpunkte und die Helligkeitsstufen:
+```
+    #define TIME_FOR_BRIGHTNESS "06:00"
+    #define TIME_FOR_BRIGHTNESS "06:00"
+    #define TIME_FOR_DARKNESS "22:00"
+    #define BRIGHTNESS_LEVEL  80
+    #define DARKNESS_LEVEL  10
+```
+
+
+Mein E3DC.sh mit sudo Rechten:
+
+```#!/bin/bash
+cd E3DC-Control-Display
+while true; do
+sudo ./E3DC-Control-Display
+sleep  300 
+echo "Neustart durchgefÃ¼hrt"
+done
+```
+
 # E3DC-Control
 
 Viele haben bemängelt, das der Speicher von E3DC über keine ausreichende und funktionsfähige Steuerung zur prognosebasierende Laden verfügt.
