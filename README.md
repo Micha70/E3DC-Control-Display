@@ -2,6 +2,13 @@
 Prinzipiell gelten alle Hinweise von Eberhard, s.u..
 
 + Installieren: git clone https://github.com/Micha70/E3DC-Control-Display.git
++ nach E3DC-Control-Display wechseln und mit make compilieren
+```
+cd E3DC-Control-Display
+make
+```
+--> weitere Konfiguration siehe unten
+
 + verwendetes Display: https://www.amazon.de/gp/product/B078J5TS2G/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1
 + Anschluss Display:
 ```
