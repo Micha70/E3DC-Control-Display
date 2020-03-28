@@ -5,7 +5,7 @@
 //  Created by Eberhard Mayer on 16.08.18.
 //  Copyright © 2018 Eberhard Mayer. All rights reserved.
 //
-#define VERSION "2020.3.17.01"
+#define VERSION "2020.3.23.01"
 #ifndef E3DC_CONF_h
 #define E3DC_CONF_h
 
@@ -15,21 +15,21 @@
 #define CONF_FILE "e3dc.config.txt"
 #define CONF_PATH "/etc/"
 
-#define WURZELZAEHLER 6;     // 0 = interner Zähler 6 = externer Zähler
+#define WURZELZAEHLER 0;     // 0 = interner Zähler 6 = externer Zähler
 
-#define LADESCHWELLE 55;     // bis zur dieser Schwelle wird geladen bevor die Regelung beginnt
-#define LADEENDE 90;         // Zielwert bis Ende Regelung, dannach wird Ladung auf 93% weiter geregelt und dann ab SOMMERLADEENDE freigegeben
-#define UNTERERLADEKORRIDOR 500 // die Ladeleistung soll zwischen dem unteren und
-#define OBERERLADEKORRIDOR  800 // oberere Ladeleistung liegen, jedoch
-#define MINIMUMLADELEISTUNG 300  // immer > MINIMUMLADELEISTUNG
-#define MAXIMUMLADELEISTUNG 1500 // maximale Ladeleistung
+#define LADESCHWELLE 50;     // bis zur dieser Schwelle wird geladen bevor die Regelung beginnt
+#define LADEENDE 80;         // Zielwert bis Ende Regelung, dannach wird Ladung auf 93% weiter geregelt und dann ab SOMMERLADEENDE freigegeben
+#define UNTERERLADEKORRIDOR  900 // die Ladeleistung soll zwischen dem unteren und
+#define OBERERLADEKORRIDOR  1500 // oberere Ladeleistung liegen, jedoch
+#define MINIMUMLADELEISTUNG  500  // immer > MINIMUMLADELEISTUNG
+#define MAXIMUMLADELEISTUNG 3000 // maximale Ladeleistung
 #define WRLEISTUNG 12000 // maximale Ladeleistung
 
-#define SPEICHERGROESSE 6.9 // nutzbare Kapazität des S10 Speichers
+#define SPEICHERGROESSE 13.8 // nutzbare Kapazität des S10 Speichers
 #define WINTERMINIMUM   11.5 // Uhrzeit (als Dezimalwert) bis zu dieser Uhrzeit wird das Laden überwacht
 #define SOMMERMAXIMUM   14.5 // alle Zeiten in GMT = MEZ Winterzeit - 1
 #define SOMMERLADEENDE  18.5 // alle Zeiten in GMT = MEZ Winterzeit - 1
-#define EINSPEISELIMIT   3.9 // maximal erlaubte Einspeiseleistung in kW
+#define EINSPEISELIMIT   6.9 // maximal erlaubte Einspeiseleistung in kW
 
 //const int cLadeschwelle = LADESCHWELLE; // Minimum Lade-Schwelle wird bevorzugt der E3DC-Speicher geladen
 //const int cLadeende = LADEENDE;     // Lade-Schwelle des überwachten Ladens
@@ -44,5 +44,6 @@ typedef struct {
     int32_t ht, untererLadekorridor, obererLadekorridor, minimumLadeleistung, maximumLadeleistung, wrleistung,peakshave;
     float_t speichergroesse,winterminimum, sommermaximum,sommerladeende, einspeiselimit,
     hton, htoff, htsockel;
+
 
 }e3dc_config_t;

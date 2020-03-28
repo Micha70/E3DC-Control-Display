@@ -7,6 +7,8 @@ includes restart logger
 20191015 contains everything until commit 85 from 10.08.2019
 20200209 change for format in Ladelstg
 20200317 sync with commit 110 from 21.03.2020
+20200328 sync with commit 117 from 24.04.2020
+		 change path for RAM Disk in logging
 */
 
 #include <stdio.h>
@@ -82,9 +84,11 @@ int WriteLog()
 {
     if (e3dc_config.debug) {
     FILE *fp;
-    fp = fopen("/var/www/html/openWB/ramdisk/Logfile.txt", "a");
+    //MIWA 28.03.2020 fp = fopen("/var/www/html/openWB/ramdisk/Logfile.txt", "a");
+	fp = fopen("/mnt/RAMDisk/Logfile.txt", "a");
     if(!fp)
-        fp = fopen("/var/www/html/openWB/ramdisk/Logfile.txt", "w");
+        //MIWA 28.03.2020 fp = fopen("/var/www/html/openWB/ramdisk/Logfile.txt", "w");
+		fp = fopen("/mnt/RAMDisk/Logfile.txt", "w");
     if(!fp)
         fp = fopen(CONF_PATH "Logfile.txt", "a");
     if(!fp)
@@ -93,12 +97,7 @@ int WriteLog()
     fprintf(fp,"%s\n",Log);
         fclose(fp);}
 return(0);
-}																
-
-
-
-
-
+}
 int ControlLoadData(SRscpFrameBuffer * frameBuffer,int32_t Power,int32_t Mode ) {
     RscpProtocol protocol;
     SRscpValue rootValue;
@@ -276,10 +275,10 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
         ){
             // ENdladen einschalten)
 if ((iPower_Bat == 0)&&(fPower_Grid>100))
-{    sprintf(Log,"BAT %s %0.02f %0.02f %i", strtok(asctime(ts),"\n"),fht,fBatt_SOC, iDischarge);
+{            sprintf(Log,"BAT %s %0.02f %i %i% 0.02f",strtok(asctime(ts),"\n"),fBatt_SOC, iE3DC_Req_Load, iPower_Bat, fPower_Grid);
         WriteLog();
     iLMStatus = 10;
-}										  
+}
         if (iDischarge < e3dc_config.maximumLadeleistung) {
 
         Control_MAX_DISCHARGE(frameBuffer,e3dc_config.maximumLadeleistung);
@@ -433,10 +432,12 @@ if ((iPower_Bat == 0)&&(fPower_Grid>100))
 //                        die Variable wird im Mainloop überprüft und im E3DC gesetzt
 //                        wenn iLMStatus einen negativen Wert hat
                             iE3DC_Req_Load = iPower+iDiffLadeleistung;
-                            sprintf(Log,"CTL %s %0.02f %0.02f %i", strtok(asctime(ts),"\n"),fht,fBatt_SOC, iE3DC_Req_Load);
+                            sprintf(Log,"CTL %s %0.02f %i %i% 0.02f", strtok(asctime(ts),"\n"),fBatt_SOC, iE3DC_Req_Load, iPower_Bat, fPower_Grid);
                             WriteLog();
-                            iBattLoad = iE3DC_Req_Load;
-                            iLMStatus = -10;}
+                            if (iPower_PV>0)  // Nur wenn die Sonne scheint
+                            iLMStatus = -10; else
+                            iLMStatus = 10;
+                                }
 /*                    else if (fPower_Grid>50){
 // Zurück in den Automatikmodus
                         ControlLoadData(frameBuffer,0,0);
@@ -460,6 +461,9 @@ if ((iPower_Bat == 0)&&(fPower_Grid>100))
            if (abs(iE3DC_Req_Load) > e3dc_config.maximumLadeleistung)
                iE3DC_Req_Load = e3dc_config.maximumLadeleistung*-1;
             iLMStatus = -5;
+            sprintf(Log,"CPS %s %0.02f %i %i% 0.02f", strtok(asctime(ts),"\n"),fBatt_SOC, iE3DC_Req_Load, iPower_Bat, fPower_Grid);
+            WriteLog();
+
 }
     };
     printf("AVBatt   %0.1f ",fAvBatterie);
@@ -468,26 +472,6 @@ if ((iPower_Bat == 0)&&(fPower_Grid>100))
     printf("iLMStatus %i ",iLMStatus);
     printf("Reserve %0.1f%%\n",fht);
     printf("Saved today %0.0004fkWh yesterday  %0.0004fkWh\n",(fSavedtoday/3600000),(fSavedyesderday/3600000));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
    //MIWA added 20200111
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
