@@ -5,7 +5,7 @@
 //  Created by Eberhard Mayer on 16.08.18.
 //  Copyright © 2018 Eberhard Mayer. All rights reserved.
 //
-#define VERSION "2020.4.13.01"
+#define VERSION "2020.5.01.00" //Mai branch
 #ifndef E3DC_CONF_h
 #define E3DC_CONF_h
 
@@ -14,11 +14,13 @@
 // Konfigurationsdatei
 #define CONF_FILE "e3dc.config.txt"
 #define CONF_PATH "/etc/"
+#define OPENWB "localhost"
 
 #define WURZELZAEHLER 0;     // 0 = interner Zähler 6 = externer Zähler
 
 #define LADESCHWELLE 50;     // bis zur dieser Schwelle wird geladen bevor die Regelung beginnt
-#define LADEENDE 80;         // Zielwert bis Ende Regelung, dannach wird Ladung auf 93% weiter geregelt und dann ab SOMMERLADEENDE freigegeben
+#define LADEENDE 80;         // Zielwert bis Ende Regelung, dannach wird Ladung auf Landeende2 weiter geregelt und dann ab SOMMERLADEENDE freigegeben
+#define LADEENDE2 93;
 #define UNTERERLADEKORRIDOR  900 // die Ladeleistung soll zwischen dem unteren und
 #define OBERERLADEKORRIDOR  1500 // oberere Ladeleistung liegen, jedoch
 #define MINIMUMLADELEISTUNG  500  // immer > MINIMUMLADELEISTUNG
@@ -31,6 +33,7 @@
 #define SOMMERLADEENDE  18.5 // alle Zeiten in GMT = MEZ Winterzeit - 1
 #define EINSPEISELIMIT   6.9 // maximal erlaubte Einspeiseleistung in kW
 
+
 //const int cLadeschwelle = LADESCHWELLE; // Minimum Lade-Schwelle wird bevorzugt der E3DC-Speicher geladen
 //const int cLadeende = LADEENDE;     // Lade-Schwelle des überwachten Ladens
 typedef struct {
@@ -39,9 +42,10 @@ typedef struct {
     char e3dc_user[128];
     char e3dc_password[128];
     char aes_password[128];
-	char logfile[128];				  
+	char logfile[128];
+    char openWBhost[128];
     bool wallbox,ext1,ext2,ext3,ext7,debug,htsat,htsun,openWB;
-    uint8_t wurzelzaehler,ladeschwelle, ladeende, unload;
+    uint8_t wurzelzaehler,ladeschwelle, ladeende,ladeende2, unload;
     int32_t ht, untererLadekorridor, obererLadekorridor, minimumLadeleistung, maximumLadeleistung, wrleistung,peakshave,peakshsoc;
     float_t speichergroesse,winterminimum, sommermaximum,sommerladeende, einspeiselimit,
     hton, htoff, htsockel;
