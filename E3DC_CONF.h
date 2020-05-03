@@ -5,7 +5,7 @@
 //  Created by Eberhard Mayer on 16.08.18.
 //  Copyright © 2018 Eberhard Mayer. All rights reserved.
 //
-#define VERSION "2020.5.01.00" //Mai branch
+#define VERSION "2020.5.3.1" //Mai branch
 #ifndef E3DC_CONF_h
 #define E3DC_CONF_h
 
@@ -49,6 +49,13 @@ typedef struct {
     int32_t ht, untererLadekorridor, obererLadekorridor, minimumLadeleistung, maximumLadeleistung, wrleistung,peakshave,peakshsoc;
     float_t speichergroesse,winterminimum, sommermaximum,sommerladeende, einspeiselimit,
     hton, htoff, htsockel;
-
+    bool prognose;
+    float_t latitude;          //latitude of location, -90 (south) … 90 (north)
+  	float_t longitude;         //longitude of location, -180 (west) … 180 (east)
+  	int dach_neigung;          //plane declination, 0 (horizontal) … 90 (vertical)
+  	int dach_richtung;         //plane azimuth, -180 … 180 (-180 = north, -90 = east, 0 = south, 90 = west, 180 = north)
+  	float_t wirkungsgrad;      //1.0 wenn Werte von https://api.forecast.solar der Anlagenleistung entsprechen //sind scheinbar sehr optimistisch
+  	float_t anlagen_leistung;  //installed modules power in kilo watt
+    int32_t grundbedarf;
 
 }e3dc_config_t;

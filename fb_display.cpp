@@ -130,6 +130,16 @@ void update_display_control(struct FBIO::FrameBuffer *pFB, struct status *status
 
 	MyFont.SetPenColour(200, 200, 200);
 
+	//20200502
+	//krit/ENDE
+  MyFont.Printf(FB,5,h-82, "Krit: %d Lende: %2d%%",E3DC_status.prognose_kriterium,E3DC_status.ladeende);	
+
+	//20200502
+	//Erw.MaxLeistung
+	MyFont.Printf(FB,5,h-72, "ErwMaxLstg: %4d W",E3DC_status.exp_max_power_today);
+	//Erw.verbl.Ertrag
+	MyFont.Printf(FB,5,h-62, "ErwErtrag: %2.1f kWh",E3DC_status.exp_rem_energy_today);
+
 	//AusgabeProduction
 	//snprintf(temp_buffer,sizeof(temp_buffer),"Ladelst.: %4.1f W",E3DC_status.production_w);
 	//fb_put_string(fb_info, 5, h-34, temp_buffer, strlen(temp_buffer), 0xffffff, 1, 3);

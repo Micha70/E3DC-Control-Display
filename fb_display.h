@@ -19,6 +19,10 @@ struct status
 	float net__feed_kw;
 	float SOC_percent;
 	float safed_today_kwh;
+	int32_t exp_max_power_today;
+	float exp_rem_energy_today;
+	int prognose_kriterium;
+	int ladeende;
 };
 
 typedef struct status status;
