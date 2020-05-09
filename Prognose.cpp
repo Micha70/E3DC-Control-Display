@@ -75,7 +75,7 @@ int Prognose(remaining_delivery* remaining)
 	str_anfrage += "/" + to_string(e3dc_config.dach_neigung);
 	str_anfrage += "/" + to_string(e3dc_config.dach_richtung);
 	str_anfrage += "/" + to_string(e3dc_config.anlagen_leistung);
-	//printf("8%s\n",str_anfrage.c_str());
+	//printf("Anfrage: %s\n",str_anfrage.c_str());
 
 
 	//printf("Test\n");
@@ -95,9 +95,12 @@ int Prognose(remaining_delivery* remaining)
 
 	if(!ferror(f) and n>50) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
 	{
-		printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
+		//printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
 	}
-	else{return 1;}
+	else{
+		printf("Only %zu Zeichen gelesen: %s",n,str_content.c_str());
+		return 2;
+	}
 
 
 //printf("Test 4\n");
@@ -214,7 +217,7 @@ int index_today=0; int index_tomorrow=0;
 	str_anfrage += "/" + to_string(e3dc_config.dach_neigung);
 	str_anfrage += "/" + to_string(e3dc_config.dach_richtung);
 	str_anfrage += "/" + to_string(e3dc_config.anlagen_leistung);
-	//printf("8%s\n",str_anfrage.c_str());
+	//printf("Anfrage: %s\n",str_anfrage.c_str());
 
 
 	//printf("Test\n");
@@ -222,7 +225,7 @@ int index_today=0; int index_tomorrow=0;
 	//f = popen("curl -H \"Accept: text/csv\" https://api.forecast.solar/estimate/watthours/49.137136/12.123933/40/0/5.7","r");
 	f = popen(str_anfrage.c_str(),"r");
 	if(!f)
-		return 1;
+		return 3;
 
 	buffer =(char *) calloc(MAXSTRLEN+1,1);
 
@@ -234,7 +237,10 @@ int index_today=0; int index_tomorrow=0;
 	if(!ferror(f) and n>50) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
 	{	//printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
 	}
-	else{return 1;}
+	else{
+		printf("Only %zu Zeichen gelesen: %s",n,str_content.c_str());
+		return 4;
+	}
 
 	free(buffer);
 

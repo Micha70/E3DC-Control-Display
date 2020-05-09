@@ -274,7 +274,7 @@ static int32_t iDiffLadeleistung, iDiffLadeleistung2;
 static time_t tLadezeit_alt,tLadezeitende_alt,tE3DC_alt;
 static time_t t = 0;
 static time_t tm_CONF_dt;
-static bool bCheckConfig;						 
+static bool bCheckConfig;
 bool CheckConfig()
 {
     struct stat stats;
@@ -485,11 +485,11 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
             fclose(fp);
         }
         fSavedyesderday=fSavedtoday; fSavedtoday=0;
-        fSavedtotal=0; fSavedWB=0;	
+        fSavedtotal=0; fSavedWB=0;
 
     }
     t = tE3DC % (24*3600);
-    
+
     static time_t t_config = tE3DC;
     if ((tE3DC-t_config) > 10)
     {
@@ -504,9 +504,10 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
       //MIWA added 20200502
       ///////////////////////////////////////////////////////////////////////////////////////////////////////
       //support für Prognose
-      if(Prognose(&prognose_werte)==1)
+      int ret_val_prog;
+      if((ret_val_prog=Prognose(&prognose_werte))>0)
       {
-            printf("Keine Prognose ermittelbar\n");
+            printf("Keine Prognose ermittelbar: %d\n",ret_val_prog);
       }
       else
       {
@@ -710,7 +711,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 //    else
 //    if (iPower <100) iPower = 100;
 
- 
+
 // Ermitteln Überschuss/gesicherte Leistungen
 
     if (iPower > 0)
@@ -720,7 +721,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
             fSavedtoday = fSavedtoday + iPower;}
     if (iPower_PV > e3dc_config.einspeiselimit*1000)
         {fSavedtotal = iPower_PV - e3dc_config.einspeiselimit*1000 + fSavedtotal;
-            
+
     if (fPower_WB>0)
         if ((fPower_WB-fPower_Grid+iPower_Bat)>e3dc_config.einspeiselimit*1000)
             fSavedWB = fSavedWB+fPower_WB-fPower_Grid+iPower_Bat-e3dc_config.einspeiselimit*1000;
@@ -804,7 +805,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 //MIWA added 20200503    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Prognosewerte -> Logfile
 
-                                sprintf(Log,"CTL %s %0.02f %i %i% 0.02f %i %i",strtok(asctime(ts),"\n"),fBatt_SOC, iE3DC_Req_Load, iPower_Bat, fPower_Grid, prognose_werte.prognosis_remaining_max_power_today , prognose_werte.prognosis_remaining_energy_today);
+                                sprintf(Log,"CTL %s %0.02f %i %i% 0.02f %i %i %d",strtok(asctime(ts),"\n"),fBatt_SOC, iE3DC_Req_Load, iPower_Bat, fPower_Grid, prognose_werte.prognosis_remaining_max_power_today , prognose_werte.prognosis_remaining_energy_today, E3DC_status.prognose_kriterium);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 WriteLog();}
                             } else
@@ -993,7 +994,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                     else WBchar6[1] = 32;
         }
         if ((fPower_WB > 1000) && not (bWBmaxLadestrom)) { // Wallbox lädt
-            bWBOn = true; WBchar6[4] = 0; 
+            bWBOn = true; WBchar6[4] = 0;
             if (WBchar6[1]==6) iWBMinimumPower = fPower_WB;
             if (((fPower_Grid< -200)&&(fAvPower_Grid < -100)) && ((iPower_Bat > iMinLade)||(iPower_Bat >= iBattLoad)) && (WBchar6[1]<iMaxcurrent)){
                 WBchar6[1]++;
@@ -2198,4 +2199,3 @@ int main(int argc, char *argv[])
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     return 0;
 }
-
