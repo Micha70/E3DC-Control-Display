@@ -14,6 +14,7 @@ includes restart logger
 20200501 sync with commit 181 from 01.05.2020
 		 add prognose
 20200503 sync with commit 186 from 05.05.2020
+20200508 sync with commit 208 from 06.05.2020
 */
 
 #include <sys/stat.h>
@@ -94,7 +95,7 @@ int WriteLog()
 {
   static time_t t,t_alt = 0;
     int day,hour;
-    char fname[80];
+    char fname[127];
     time(&t);
     FILE *fp;
     struct tm * ptm;
@@ -124,10 +125,10 @@ int WriteLog()
 return(0);
 }
 
-int MQTTsend(char buffer[100])
+int MQTTsend(char buffer[127])
 
 {
-    char cbuf[100];
+    char cbuf[127];
     if (e3dc_config.openWB) {
         sprintf(cbuf, "mosquitto_pub -r -h %s -t %s", e3dc_config.openWBhost,buffer);
         system(cbuf);
@@ -268,11 +269,12 @@ int createRequestWBData(SRscpFrameBuffer * frameBuffer) {
 
 
 static float fBatt_SOC, fBatt_SOC_alt;
-static float_t fSavedtoday, fSavedyesderday; // Überschussleistung
+static float_t fSavedtoday, fSavedyesderday,fSavedtotal,fSavedWB; // Überschussleistung
 static int32_t iDiffLadeleistung, iDiffLadeleistung2;
 static time_t tLadezeit_alt,tLadezeitende_alt,tE3DC_alt;
 static time_t t = 0;
 static time_t tm_CONF_dt;
+static bool bCheckConfig;						 
 bool CheckConfig()
 {
     struct stat stats;
@@ -463,9 +465,6 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     printf("\n");
     tm *ts;
     ts = gmtime(&tE3DC);
-    float ft;
-    ft = float(tE3DC % (24*3600))/3600;
-    t = tE3DC % (24*3600);
     int hh,mm,ss;
     hh = t % (24*3600)/3600;
     mm = t % (3600)/60;
@@ -473,7 +472,8 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 
     if ((tE3DC % (24*3600)+12*3600)<t) {
 // Erstellen Statistik, Eintrag Logfile
-        sprintf(Log,"Time %s %i:%i:%i %0.04f %0.04f", strtok(asctime(ts),"\n"),hh,mm,ss,fSavedtoday/3600000,fSavedyesderday/3600000);
+        sprintf(Log,"Time %s Ü:%0.04f S:%0.04f WB:%0.04f Y%0.04f", strtok(asctime(ts),"\n"),fSavedtotal/3600000,fSavedtoday/3600000,fSavedWB/3600000,fSavedyesderday/3600000);
+        WriteLog();
         if (fSavedtoday > 0)
         {
         FILE *fp;
@@ -485,16 +485,22 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
             fclose(fp);
         }
         fSavedyesderday=fSavedtoday; fSavedtoday=0;
-        WriteLog();
+        fSavedtotal=0; fSavedWB=0;	
+
     }
-    static time_t t_config = t;
-
-    if (t-t_config > 10)
+    t = tE3DC % (24*3600);
+    
+    static time_t t_config = tE3DC;
+    if ((tE3DC-t_config) > 10)
     {
-      if (CheckConfig()) // Config-Datei hat sich geändert;
-        GetConfig();
-        t_config = t;
-
+        if (CheckConfig()) // Config-Datei hat sich geändert;
+        {
+//            printf("Config geändert");
+            GetConfig();
+            bCheckConfig = true;
+//            printf("Config neu eingelesen");
+        }
+        t_config = tE3DC;
       //MIWA added 20200502
       ///////////////////////////////////////////////////////////////////////////////////////////////////////
       //support für Prognose
@@ -631,11 +637,12 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 
     if (t < tLadezeitende)
     {
-      if ((fBatt_SOC!=fBatt_SOC_alt)||(t-tLadezeit_alt>300)||(tLadezeitende!=tLadezeitende_alt)||(iFc == 0))
+      if ((fBatt_SOC!=fBatt_SOC_alt)||(t-tLadezeit_alt>300)||(tLadezeitende!=tLadezeitende_alt)||(iFc == 0)||bCheckConfig)
 // Neuberechnung der Ladeleistung erfolgt, denn der SoC sich ändert oder
 // tLadezeitende sich ändert oder nach Ablauf von höchstens 5 Minuten
       {
         fBatt_SOC_alt=fBatt_SOC; // bei Änderung SOC neu berechnen
+          bCheckConfig=false;
           tLadezeitende_alt = tLadezeitende; // Auswertungsperiode
           tLadezeit_alt=t; // alle 300sec Berechnen
 
@@ -703,8 +710,21 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 //    else
 //    if (iPower <100) iPower = 100;
 
+ 
+// Ermitteln Überschuss/gesicherte Leistungen
+
     if (iPower > 0)
-      fSavedtoday = fSavedtoday + iPower;
+    {if (iPower >iPower_Bat)
+          fSavedtoday = fSavedtoday + iPower_Bat;
+        else
+            fSavedtoday = fSavedtoday + iPower;}
+    if (iPower_PV > e3dc_config.einspeiselimit*1000)
+        {fSavedtotal = iPower_PV - e3dc_config.einspeiselimit*1000 + fSavedtotal;
+            
+    if (fPower_WB>0)
+        if ((fPower_WB-fPower_Grid+iPower_Bat)>e3dc_config.einspeiselimit*1000)
+            fSavedWB = fSavedWB+fPower_WB-fPower_Grid+iPower_Bat-e3dc_config.einspeiselimit*1000;
+        }
 
 
         if (((fBatt_SOC > e3dc_config.ladeschwelle)&&(t<tLadezeitende))||(fBatt_SOC > e3dc_config.ladeende))
@@ -747,6 +767,10 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 // Steuerung direkt über vorgabe der Batterieladeleistung
 // -iPower_Bat + int32_t(fPower_Grid)
                 if (iLMStatus == 1) {
+// Es wird nur Morgens bis zum Winterminimum auf ladeende entladen;
+// Danach wird nur bis auf ladeende2 entladen.
+                    if ((iPower < 0)&&((t>e3dc_config.winterminimum)&&(fBatt_SOC<e3dc_config.ladeende2)))
+                     iPower = 0;
                  iBattLoad = iPower;
                  tE3DC_alt = t;
 //                    if (iPower_Bat > iPower)
@@ -820,8 +844,10 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     printf("BattLoad %i ",iBattLoad);
     printf("iLMStatus %i ",iLMStatus);
     printf("Reserve %0.1f%%\n",fht);
-    printf("Saved today %0.0004fkWh yesterday  %0.0004fkWh\n",(fSavedtoday/3600000),(fSavedyesderday/3600000));
-
+    printf("Ü %0.0004fkWh td %0.0004fkWh", (fSavedtotal/3600000),(fSavedtoday/3600000));
+    if (e3dc_config.wallbox)
+    printf(" WB %0.0004fkWh",(fSavedWB/3600000));
+    printf(" yd %0.0004fkWh\n",(fSavedyesderday/3600000));
 
    //MIWA added 20200111
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -924,7 +950,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
 { // Wallbox lädt nicht
     if ((not bWBmaxLadestrom)&&(not bWBOn))
     { WBchar6[1] = 6;
-//      WBchar6[4] = 1; // Laden starten
+      WBchar6[4] = 1; // Laden automatisch starten
         bWBOn = true;
         createRequestWBData(frameBuffer);
         WBchar6[4] = 0; // toggle aus
@@ -967,7 +993,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                     else WBchar6[1] = 32;
         }
         if ((fPower_WB > 1000) && not (bWBmaxLadestrom)) { // Wallbox lädt
-            bWBOn = true;
+            bWBOn = true; WBchar6[4] = 0; 
             if (WBchar6[1]==6) iWBMinimumPower = fPower_WB;
             if (((fPower_Grid< -200)&&(fAvPower_Grid < -100)) && ((iPower_Bat > iMinLade)||(iPower_Bat >= iBattLoad)) && (WBchar6[1]<iMaxcurrent)){
                 WBchar6[1]++;
@@ -1270,7 +1296,7 @@ if (e3dc_config.wallbox)
 
 int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
 {
-    char buffer[100];
+    char buffer[127];
     // check if any of the response has the error flag set and react accordingly
     if(response->dataType == RSCP::eTypeError) {
         // handle error for example access denied errors
@@ -1923,7 +1949,7 @@ static void receiveLoop(bool & bStopExecution)
             vecDynamicBuffer.resize(vecDynamicBuffer.size() + 4096);
         }
         // receive data
-        int iResult = SocketRecvData(iSocket, &vecDynamicBuffer[0] + iReceivedBytes, vecDynamicBuffer.size() - iReceivedBytes);
+        long iResult = SocketRecvData(iSocket, &vecDynamicBuffer[0] + iReceivedBytes, vecDynamicBuffer.size() - iReceivedBytes);
         if(iResult < 0)
         {
             // check errno for the error code to detect if this is a timeout or a socket error
@@ -2172,3 +2198,4 @@ int main(int argc, char *argv[])
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     return 0;
 }
+

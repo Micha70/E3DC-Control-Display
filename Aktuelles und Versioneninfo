@@ -1,3 +1,24 @@
+Version 2020.5.6.1
+
+es wird bis zum Zeitpunkt winterminimum entladen wenn der SoC > ladeende ist.
+Danach wird bis zum Regelzeitraumende nur entladen, wenn der SoC > ladeende 2 ist. 
+
+
+
+version 2020.5.4.0
+
+Die e3dc.config.txt wurde nur am aktuellem Tag neueingelesen. Das geht jetzt immer.
+Die Statistiken wurden erweiter. 
+Ü = Überschuss über dem einpeiselimit. Das würde man bei z.B. 70% hart verlieren 
+td = Saved today
+WB = Wenn man eine Wallbox hat, sieht man hier, was man über das eAuto Laden gerettet hat.
+yd = Der Wert vom Saved today des Vortages
+
+version 2020.5.3.0
+
+Man kann nie genug testen, der Zeitstempel zur Auswertung der savetoday funktion rutschte im Zuge der
+Programmerweiterung an die falsche Stelle. 
+
 version 2020.5.2.1
 
 Für besondere Situation und zur Dokumentation der an E3DC übermittelten Anweisungen können diese in einer Logfile
