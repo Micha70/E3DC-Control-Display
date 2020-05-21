@@ -541,7 +541,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     //Prognoseeingriff
     float ladezeitkorrektur=0;
-    if(e3dc_config.prognose && E3DC_status.prognose_kriterium==0)
+    if(e3dc_config.prognose /*&& E3DC_status.prognose_kriterium==0*/)
     {
       // 	1. Verfügbare max Sonnenleistung der restlichen Stunden < ( Abregelungsgrenze + Grundverbrauch) --> auf ladeende2 laden
       if(((prognose_werte.prognosis_remaining_max_power_today * e3dc_config.wirkungsgrad) < (e3dc_config.einspeiselimit*1000+e3dc_config.grundbedarf))&&(fBatt_SOC<90))
