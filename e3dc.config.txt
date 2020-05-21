@@ -1,12 +1,13 @@
+
 # /etc/e3dc.config.txt - Configuration file for E3DC Rscp application
 
-server_ip = 192.168.178.33
-server_port = 5033
-e3dc_user = xxxxxx@xxxx.xx
-e3dc_password = xxxxxxx
-aes_password = xxxx
 debug = true
 logfile = /mnt/RAMDisk/Logfile.txt
+server_ip = 192.168.178.20
+server_port = 5033
+e3dc_user = micha.wagner70@gmx.de
+e3dc_password = KuMhsgtl1206
+aes_password = IKrS5#
 wallbox = false
 ext1 = false
 ext2 = false
@@ -21,15 +22,16 @@ minimumLadeleistung = 300
 maximumLadeleistung = 1500
 speichergroesse = 6.9
 winterminimum = 10.5
-sommermaximum = 13.0
-sommerladeende = 13.0
+sommermaximum = 15.5
+sommerladeende = 15.0
 wrleistung = 4100
 unload = 100
 prognose = true
-longitude = 12.100000
-latitude = 49.100000
+longitude = 12.123933
+latitude = 49.137136
 dach_richtung = 22
 dach_neigung = 40
 wirkungsgrad = 0.8
 anlagen_leistung = 5.7
 grundbedarf = 300
+
