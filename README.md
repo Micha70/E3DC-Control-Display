@@ -74,10 +74,11 @@ done
 ## Prognose
 
 **Aktivierung** erfolgt in e3dc.confic.txt:
-
+```
 prognose = true
-
+```
 Folgende Parameter müssen zusätzlich gesetzt werden:
+```
 longitude = 12.100000
 latitude = 49.100000
 dach_richtung = 22
@@ -85,14 +86,15 @@ dach_neigung = 40
 wirkungsgrad = 0.8
 anlagen_leistung = 5.7
 grundbedarf = 300
+```
 
-latitude - latitude of location, -90 (south) … 90 (north)
-longitude - longitude of location, -180 (west) … 180 (east)
-dachniegung - plane declination, 0 (horizontal) … 90 (vertical)
-dachrichtung - plane azimuth, -180 … 180 (-180 = north, -90 = east, 0 = south, 90 = west, 180 = north)
-anlagenleistung - installed modules power in kilo watt
-wirkungsgrad - Korrekturfaktor zwischen Prognose und wirklicher Leistung der Anlage
-grundbedarf - Grundbedarf des Hauses, was wird ohne größere Verbraucher benötigt (duchschn. Verbrauch der Nacht)
+*latitude - latitude of location, -90 (south) … 90 (north)
+*longitude - longitude of location, -180 (west) … 180 (east)
+*dach_neigung - plane declination, 0 (horizontal) … 90 (vertical)
+*dach_richtung - plane azimuth, -180 … 180 (-180 = north, -90 = east, 0 = south, 90 = west, 180 = north)
+*anlagen_leistung - installed modules power in kilo watt
+*wirkungsgrad - Korrekturfaktor zwischen Prognose und wirklicher Leistung der Anlage
+*grundbedarf - Grundbedarf des Hauses, was wird ohne größere Verbraucher benötigt (duchschn. Verbrauch der Nacht)
 
 
 **Erklärung:**
@@ -103,10 +105,15 @@ Bei der Prognoseermittlung wird die zu erwartende verbleibende maximale Leistung
 PROGNOSE Uhrzeit max.Leistung verbleibenderErtrage Kriterium
 
 *Kriterium = 0:* kein Eingriff wegen niedriger Prognose
+
 *Kriterium = 1:* prognostizierte verbleibende max Leistung (korrigiert mit Wirkungsgrad der Anlage) < (Einspeiselimit + Grundbedarf)
+
 --> fLadeende wird auf ladeende2 gesetzt
+
 *Kriterium = 2:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 2
---> fLadeende wird auf ladeende2 gesetzt
+
+--> fLadeende wird auf 100% gesetzt
+
 --> RegelEnde und LadeEnde werden um 2h vorgezogen
 
 

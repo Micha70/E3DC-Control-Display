@@ -1,3 +1,9 @@
+idee bei schlechterer Prognose ladebeginn 2h vorziehen
+
+Version 2020.5.23.1.P
+bei Kriterium 2 Ladeende = 100%
+Problem mit Uhrzeit in Logfle beseitigt
+
 Version 2020.5.21.2.P
 noch ein bugfix
 

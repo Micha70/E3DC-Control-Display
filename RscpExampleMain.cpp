@@ -20,6 +20,7 @@ includes restart logger
 20200517 sync with commit 234 from 16.05.2020
     Logeinträge bei Prognoseänderung
 20200518  Prognose nur berücksichtigen bei SOC<90
+20200522  bei Kriterium 2 ladeende = 100%
 */
 
 #include <sys/stat.h>
@@ -551,7 +552,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
       // 2. Restliche Wattstunden des Tages < Schwelle (notwendiger Ertrag um Speicher aufzufüllen *2)
       if(((prognose_werte.prognosis_remaining_energy_today * e3dc_config.wirkungsgrad) < ((100-fBatt_SOC)*e3dc_config.speichergroesse*10*2))&&(fBatt_SOC<90))
       {
-        fLadeende = e3dc_config.ladeende2;
+        fLadeende = 100;
         //20200516 --> auch sommerladeende reduzieren um 2h damit Kurve steiler wird, Akuu wird schneller voll geladen
         //  reduzierung könnte eventuell auch über die zu erwartende prognose erfolgen
         ladezeitkorrektur=2.0;
@@ -564,7 +565,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
       (old_prognose_werte.prognosis_remaining_energy_today!=prognose_werte.prognosis_remaining_energy_today)||
       (old_prognose_kriterium!=E3DC_status.prognose_kriterium))
       {
-        sprintf(Log,"PROGNOSE %s %i %i %i",strtok(asctime(ts),"\n"), prognose_werte.prognosis_remaining_max_power_today , prognose_werte.prognosis_remaining_energy_today, E3DC_status.prognose_kriterium);
+        sprintf(Log,"PROGNOSE %s MP:%i RE:%i Krit:%i",strtok(asctime(ts),"\n"), prognose_werte.prognosis_remaining_max_power_today , prognose_werte.prognosis_remaining_energy_today, E3DC_status.prognose_kriterium);
         old_prognose_werte.prognosis_remaining_max_power_today=prognose_werte.prognosis_remaining_max_power_today;
         old_prognose_werte.prognosis_remaining_energy_today=prognose_werte.prognosis_remaining_energy_today;
         old_prognose_kriterium= E3DC_status.prognose_kriterium;

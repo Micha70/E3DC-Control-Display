@@ -43,19 +43,18 @@ int Prognose(remaining_delivery* remaining)
 {
 
 	time_t now = time(0);
+	struct tm currenttime;
 	//sprintf("Number of sec since January 1,1970: %lu\n",now);
-	tm *currenttime = localtime(&now);
+	localtime_r(&now, &currenttime);
 
-	long current_sec=currenttime->tm_sec+currenttime->tm_min*60+currenttime->tm_hour*60*60;
-
+	long current_sec=currenttime.tm_sec+currenttime.tm_min*60+currenttime.tm_hour*60*60;
 	if((current_sec-last_prognose_call) < 15*60)
 		return 0; //weniger als 15min seit letzem Aufruf
-
 
 //get date of current day
 	char current_date[20];
 
-  sprintf(current_date,"%04d-%02d-%02d",1900 + currenttime->tm_year,1 + currenttime->tm_mon,currenttime->tm_mday);
+  sprintf(current_date,"%04d-%02d-%02d",1900 + currenttime.tm_year,1 + currenttime.tm_mon,currenttime.tm_mday);
 	//printf("today %s\n",current_date);
 
 
