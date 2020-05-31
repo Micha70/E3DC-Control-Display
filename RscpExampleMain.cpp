@@ -486,7 +486,10 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     mm = t % (3600)/60;
     ss = t % (60);
 
-    if (((tE3DC % (24*3600))+12*3600)<t) {
+  //  if (((tE3DC % (24*3600))+12*3600)<t) {
+  //MiWa 20200529 Abspeichern einmalig um 22:00  //22:00 MEZ = 20:00 GMT
+if (((tE3DC % (24*3600))+20*3600)<t) {
+//    if (((tE3DC % (24*3600))>(19*3600+50*60))&&((tE3DC % (24*3600))<(19*3600+50*60+20))) {
 // Erstellen Statistik, Eintrag Logfile
         sprintf(Log,"Time %s U:%0.04f td:%0.04f yd:%0.04f WB%0.04f", strtok(asctime(ts),"\n"),fSavedtotal/3600000,fSavedtoday/3600000,fSavedyesderday/3600000,fSavedWB/3600000);
         WriteLog();
@@ -648,6 +651,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     printf("RB %2ld:%2ld ",tLadezeitende3/3600,tLadezeitende3%3600/60);   //RegelBeginn
     printf("RE %2ld:%2ld ",tLadezeitende/3600,tLadezeitende%3600/60);     //RegelEnde
     printf("LE %2ld:%2ld\n",tLadezeitende2/3600,tLadezeitende2%3600/60);  //LadeEnde
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //MiWa 20200520
 //nur loggen, wenn sich Werte geändert haben
 if(tLadezeitende!=tLadezeitende_log_alt || tLadezeitende2!=tLadezeitende2_log_alt || tLadezeitende3!=tLadezeitende3_log_alt)
@@ -659,8 +663,23 @@ if(tLadezeitende!=tLadezeitende_log_alt || tLadezeitende2!=tLadezeitende2_log_al
   tLadezeitende3_log_alt=tLadezeitende3;
 
 }
-//MiWa 20200520
+time_t curtime;
+  time(&curtime);
+  struct tm ltime = *localtime(&curtime);
+  struct tm gtime = *gmtime(&curtime);
 
+//printf("Lokale Zeit: %s\n", asctime(&ltime));
+//printf("GMT Zeit: %s\n", asctime(&gtime));
+
+time_t timeZone_diff = mktime(&ltime) - mktime(&gtime) + ltime.tm_isdst*3600;
+//printf("diff %d timezone %d daylightsavingflag %d\n",timeZone_diff, timezone, ltime.tm_isdst);
+//Prognoseeingriff --> displayanzeige  //20200529
+sprintf(E3DC_status.regelbeginn,"%02ld:%02ld", ((tLadezeitende3+timeZone_diff)/3600),((tLadezeitende3+timeZone_diff)%3600/60));
+sprintf(E3DC_status.regelende,"%02ld:%02ld", ((tLadezeitende+timeZone_diff)/3600),((tLadezeitende+timeZone_diff)%3600/60));
+sprintf(E3DC_status.ladeende,"%02ld:%02ld", ((tLadezeitende2+timeZone_diff)/3600),((tLadezeitende2+timeZone_diff)%3600/60));
+
+//MiWa 20200520
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Überwachungszeitraum für das Überschussladen übschritten und Speicher > Ladeende
 // Dann wird langsam bis Abends der Speicher bis 93% geladen und spätestens dann zum Vollladen freigegeben.
@@ -731,7 +750,7 @@ if(tLadezeitende!=tLadezeitende_log_alt || tLadezeitende2!=tLadezeitende2_log_al
     //MIWA added 20200503
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     //Prognoseeingriff --> displayanzeige
-    E3DC_status.ladeende=fLadeende;
+    E3DC_status.ladeende_proz=fLadeende;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int iPower = 0;
@@ -925,8 +944,6 @@ if(tLadezeitende!=tLadezeitende_log_alt || tLadezeitende2!=tLadezeitende2_log_al
    struct tm * timeinfo;
    timeinfo = localtime (&tE3DC);
    E3DC_status.SOC_percent=fBatt_SOC;
-   //20200209 fix format
-   sprintf(E3DC_status.start_of_charge,"%02i:%02i", (unsigned int)(tLadezeitende/3600),(unsigned int)(tLadezeitende%3600/60));
    E3DC_status.safed_today_kwh=(fSavedtoday/3600000);
    //E3DC_status.production_w=1234;  filles in function int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
    E3DC_status.PV_prod_kw=2534;

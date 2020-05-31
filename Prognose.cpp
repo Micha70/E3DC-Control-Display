@@ -92,12 +92,12 @@ int Prognose(remaining_delivery* remaining)
 	string str_content(buffer);
 
 
-	if(!ferror(f) and n>50) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
+	if(!ferror(f) and n>70) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
 	{
 		//printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
 	}
 	else{
-		printf("Only %zu Zeichen gelesen: %s",n,str_content.c_str());
+		printf("Nur %zu Zeichen gelesen: %s",n,str_content.c_str());
 		return 2;
 	}
 
@@ -233,11 +233,11 @@ int index_today=0; int index_tomorrow=0;
 	fclose(f);
 	str_content=buffer;
 
-	if(!ferror(f) and n>50) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
+	if(!ferror(f) and n>70) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
 	{	//printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
 	}
 	else{
-		printf("Only %zu Zeichen gelesen: %s",n,str_content.c_str());
+		printf("Nur %zu Zeichen gelesen: %s",n,str_content.c_str());
 		return 4;
 	}
 

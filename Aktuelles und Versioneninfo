@@ -1,5 +1,12 @@
 idee bei schlechterer Prognose ladebeginn 2h vorziehen
 
+Version 2020.05.31.1.P
+Aufzeichnung safedtoday.txt um 22:00
+
+Version 2020.05.30.1.P
+Anzeige RB, RE, LB im Display
+Aufzeichnung safedtoday.txt funktioniert nicht bei Abschaltung WLAN
+
 Version 2020.5.23.1.P
 bei Kriterium 2 Ladeende = 100%
 Problem mit Uhrzeit in Logfle beseitigt
