@@ -485,11 +485,12 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     hh = t % (24*3600)/3600;
     mm = t % (3600)/60;
     ss = t % (60);
+    static int ret_val_prog;
 
   //  if (((tE3DC % (24*3600))+12*3600)<t) {
   //MiWa 20200529 Abspeichern einmalig um 22:00  //22:00 MEZ = 20:00 GMT
-if (((tE3DC % (24*3600))+20*3600)<t) {
-//    if (((tE3DC % (24*3600))>(19*3600+50*60))&&((tE3DC % (24*3600))<(19*3600+50*60+20))) {
+//if (((tE3DC+20*3600) % (24*3600))<t) {
+    if (((tE3DC % (24*3600))>(19*3600+60*59+59))&&((tE3DC % (24*3600))<(19*3600+60*60))) {
 // Erstellen Statistik, Eintrag Logfile
         sprintf(Log,"Time %s U:%0.04f td:%0.04f yd:%0.04f WB%0.04f", strtok(asctime(ts),"\n"),fSavedtotal/3600000,fSavedtoday/3600000,fSavedyesderday/3600000,fSavedWB/3600000);
         WriteLog();
@@ -523,8 +524,8 @@ if (((tE3DC % (24*3600))+20*3600)<t) {
       //MIWA added 20200502
       ///////////////////////////////////////////////////////////////////////////////////////////////////////
       //support für Prognose
-      int ret_val_prog;
-      if((ret_val_prog=Prognose(&prognose_werte))>0)
+      ret_val_prog=Prognose(&prognose_werte);
+      if(ret_val_prog>0)
       {
             printf("Keine Prognose ermittelbar: %d\n",ret_val_prog);
             E3DC_status.prognose_kriterium=99;  //Fehler
@@ -545,10 +546,10 @@ if (((tE3DC % (24*3600))+20*3600)<t) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     //Prognoseeingriff
     float ladezeitkorrektur=0;
-    if(e3dc_config.prognose /*&& E3DC_status.prognose_kriterium==0*/)
+    if(e3dc_config.prognose && ret_val_prog==0)
     {
       // 	1. Verfügbare max Sonnenleistung der restlichen Stunden < ( Abregelungsgrenze + Grundverbrauch) --> auf ladeende2 laden
-      if(((prognose_werte.prognosis_remaining_max_power_today * e3dc_config.wirkungsgrad) < (e3dc_config.einspeiselimit*1000+e3dc_config.grundbedarf))&&(fBatt_SOC<90))
+      if(((prognose_werte.prognosis_remaining_max_power_today * e3dc_config.wirkungsgrad) < (e3dc_config.einspeiselimit*1000+e3dc_config.grundbedarf))&&(fBatt_SOC<70))
       {  fLadeende = e3dc_config.ladeende2;
          E3DC_status.prognose_kriterium=1;
       }
@@ -559,7 +560,20 @@ if (((tE3DC % (24*3600))+20*3600)<t) {
         //20200516 --> auch sommerladeende reduzieren um 2h damit Kurve steiler wird, Akuu wird schneller voll geladen
         //  reduzierung könnte eventuell auch über die zu erwartende prognose erfolgen
         ladezeitkorrektur=2.0;
+        //20200603 --> bei schlechter Prognose kein unload -> unload auf 100 setzen
+        e3dc_config.unload = 100;
         E3DC_status.prognose_kriterium=2;
+      }
+      if(((prognose_werte.prognosis_remaining_energy_today * e3dc_config.wirkungsgrad) < ((100-fBatt_SOC)*e3dc_config.speichergroesse*10*6))&&(fBatt_SOC<60))
+      {
+        //20200604 --> Kriterium 3 eingeführt -->
+        // SOC <60%
+        // verbleibender Ertrage is kleiner als sechs-fache Menge um den verbleibenden Speicher aufzuladen
+        fLadeende = 100;
+        ladezeitkorrektur=4.0;
+        //kein Unload bei schlechter Prognose kein unload -> unload auf 100 setzen
+        e3dc_config.unload = 100;
+        E3DC_status.prognose_kriterium=3;
       }
     }
     //Prognosewerte -> Logfile

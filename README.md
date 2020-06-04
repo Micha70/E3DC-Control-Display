@@ -106,16 +106,25 @@ PROGNOSE Uhrzeit max.Leistung verbleibenderErtrage Kriterium
 
 *Kriterium = 0:* kein Eingriff wegen niedriger Prognose
 
-*Kriterium = 1:* prognostizierte verbleibende max Leistung (korrigiert mit Wirkungsgrad der Anlage) < (Einspeiselimit + Grundbedarf)
+*Kriterium = 1:* prognostizierte verbleibende max Leistung (korrigiert mit Wirkungsgrad der Anlage) < (Einspeiselimit + Grundbedarf) und SOC < 70
 
 --> fLadeende wird auf ladeende2 gesetzt
 
-*Kriterium = 2:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 2
+*Kriterium = 2:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 2 und SOC < 90
 
 --> fLadeende wird auf 100% gesetzt
 
 --> RegelEnde und LadeEnde werden um 2h vorgezogen
 
+--> Unload = 100 Entladen der Batterie wird nicht durchgeführt
+
+*Kriterium = 3:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 6 und SOC < 60%
+
+--> fLadeende wird auf 100% gesetzt
+
+--> RegelEnde und LadeEnde werden um 4h vorgezogen
+
+--> Unload = 100 Entladen der Batterie wird nicht durchgeführt
 
 
 ---

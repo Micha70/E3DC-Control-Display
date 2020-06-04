@@ -1,6 +1,12 @@
-idee bei schlechterer Prognose ladebeginn 2h vorziehen
+Idee: bei schlechterer Prognose ladebeginn 2h vorziehen
 
-Version 2020.05.31.1.P
+Version 2020.06.4.1.P
+Aufzeichung safedtoday.txt nochmals korrigiert, soll um 22:00 abgespeichert werden (1malig)
+Kriterium 3 eingeführt
+
+Version 2020.06.3.1.P
+bei schlechter Prognose Kriterium 2 den unload verhindern
+Kriterium 1 nur bei SOC<70% anwenden
 Aufzeichnung safedtoday.txt um 22:00
 
 Version 2020.05.30.1.P
