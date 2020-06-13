@@ -4,7 +4,7 @@ Prinzipiell gelten alle Hinweise von Eberhard, s.u..
 
 ## Displayansteuerung
 + Installieren: git clone https://github.com/Micha70/E3DC-Control-Display.git
-+ nach E3DC-Control-Display-Prognose wechseln und mit make compilieren
++ nach E3DC-Control-Display wechseln und mit make compilieren
 ```
 cd E3DC-Control-Display
 make
@@ -63,7 +63,7 @@ In io_BCM2835.h stehen die Schaltzeitpunkte und die Helligkeitsstufen:
 Mein E3DC.sh mit sudo Rechten:
 
 ```#!/bin/bash
-cd E3DC-Control-Display-Prognose
+cd E3DC-Control-Display
 while true; do
 sudo ./E3DC-Control-Display
 sleep  300
@@ -118,13 +118,15 @@ PROGNOSE Uhrzeit max.Leistung verbleibenderErtrage Kriterium
 
 --> Unload = 100 Entladen der Batterie wird nicht durchgeführt
 
-*Kriterium = 3:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 6 und SOC < 60%
+*Kriterium = 3:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 4 und SOC < 60%
 
---> fLadeende wird auf 100% gesetzt
+--> fLadeende/Ladeschwelle wird auf 100% gesetzt
 
 --> RegelEnde und LadeEnde werden um 4h vorgezogen
 
 --> Unload = 100 Entladen der Batterie wird nicht durchgeführt
+
+--> Kriterium 3 wird eingelogged für kompletten Tag, solange SOC<90%
 
 
 ---

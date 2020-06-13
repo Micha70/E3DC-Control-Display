@@ -1,5 +1,13 @@
 Idee: bei schlechterer Prognose ladebeginn 2h vorziehen
 
+Version 2020.06.11.1.P
+Für Kriterium 3 -> Ladezeitkorrektur -4h
+Gleichung für Regelende / Ladezeitende geändert
+
+Version 2020.06.5.1.P
+Kriterium 3 für ganzen Tag einloggen, solange SOC<90%
+Kriterium 3 --> Ladeschwelle auf 100% setzen
+
 Version 2020.06.4.1.P
 Aufzeichung safedtoday.txt nochmals korrigiert, soll um 22:00 abgespeichert werden (1malig)
 Kriterium 3 eingeführt

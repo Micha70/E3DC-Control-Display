@@ -490,7 +490,8 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
   //  if (((tE3DC % (24*3600))+12*3600)<t) {
   //MiWa 20200529 Abspeichern einmalig um 22:00  //22:00 MEZ = 20:00 GMT
 //if (((tE3DC+20*3600) % (24*3600))<t) {
-    if (((tE3DC % (24*3600))>(19*3600+60*59+59))&&((tE3DC % (24*3600))<(19*3600+60*60))) {
+    if (((tE3DC % (24*3600))>(19*3600+60*59+58))&&((tE3DC % (24*3600))<(19*3600+60*60))) {
+      E3DC_status.prognose_kriterium=0;
 // Erstellen Statistik, Eintrag Logfile
         sprintf(Log,"Time %s U:%0.04f td:%0.04f yd:%0.04f WB%0.04f", strtok(asctime(ts),"\n"),fSavedtotal/3600000,fSavedtoday/3600000,fSavedyesderday/3600000,fSavedWB/3600000);
         WriteLog();
@@ -534,7 +535,7 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
       {
         E3DC_status.exp_max_power_today=prognose_werte.prognosis_remaining_max_power_today * e3dc_config.wirkungsgrad ;
         E3DC_status.exp_rem_energy_today=(float_t)prognose_werte.prognosis_remaining_energy_today/1000 * e3dc_config.wirkungsgrad;
-        E3DC_status.prognose_kriterium=0;
+        if(E3DC_status.prognose_kriterium!=3) E3DC_status.prognose_kriterium=0;
       }
       ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -546,35 +547,41 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     //Prognoseeingriff
     float ladezeitkorrektur=0;
+
+    if(fBatt_SOC>90) E3DC_status.prognose_kriterium=0;  //kriterium freigeben, falls eingelogged
     if(e3dc_config.prognose && ret_val_prog==0)
     {
-      // 	1. Verfügbare max Sonnenleistung der restlichen Stunden < ( Abregelungsgrenze + Grundverbrauch) --> auf ladeende2 laden
-      if(((prognose_werte.prognosis_remaining_max_power_today * e3dc_config.wirkungsgrad) < (e3dc_config.einspeiselimit*1000+e3dc_config.grundbedarf))&&(fBatt_SOC<70))
-      {  fLadeende = e3dc_config.ladeende2;
-         E3DC_status.prognose_kriterium=1;
-      }
-      // 2. Restliche Wattstunden des Tages < Schwelle (notwendiger Ertrag um Speicher aufzufüllen *2)
-      if(((prognose_werte.prognosis_remaining_energy_today * e3dc_config.wirkungsgrad) < ((100-fBatt_SOC)*e3dc_config.speichergroesse*10*2))&&(fBatt_SOC<90))
-      {
-        fLadeende = 100;
-        //20200516 --> auch sommerladeende reduzieren um 2h damit Kurve steiler wird, Akuu wird schneller voll geladen
-        //  reduzierung könnte eventuell auch über die zu erwartende prognose erfolgen
-        ladezeitkorrektur=2.0;
-        //20200603 --> bei schlechter Prognose kein unload -> unload auf 100 setzen
-        e3dc_config.unload = 100;
-        E3DC_status.prognose_kriterium=2;
-      }
-      if(((prognose_werte.prognosis_remaining_energy_today * e3dc_config.wirkungsgrad) < ((100-fBatt_SOC)*e3dc_config.speichergroesse*10*6))&&(fBatt_SOC<60))
+      if((((prognose_werte.prognosis_remaining_energy_today * e3dc_config.wirkungsgrad) < ((100-fBatt_SOC)*e3dc_config.speichergroesse*10*4))&&(fBatt_SOC<60))||(E3DC_status.prognose_kriterium==3))
       {
         //20200604 --> Kriterium 3 eingeführt -->
         // SOC <60%
-        // verbleibender Ertrage is kleiner als sechs-fache Menge um den verbleibenden Speicher aufzuladen
+        // verbleibender Ertrage is kleiner als vierfache Menge um den verbleibenden Speicher aufzuladen
         fLadeende = 100;
+        //20200605 --> Ladeschwelle = 100% --> sofortiges Aufladen
+        e3dc_config.ladeschwelle = 100;
         ladezeitkorrektur=4.0;
         //kein Unload bei schlechter Prognose kein unload -> unload auf 100 setzen
         e3dc_config.unload = 100;
         E3DC_status.prognose_kriterium=3;
       }
+      else{
+              // 	1. Verfügbare max Sonnenleistung der restlichen Stunden < ( Abregelungsgrenze + Grundverbrauch) --> auf ladeende2 laden
+              if(((prognose_werte.prognosis_remaining_max_power_today * e3dc_config.wirkungsgrad) < (e3dc_config.einspeiselimit*1000+e3dc_config.grundbedarf))&&(fBatt_SOC<70))
+              {  fLadeende = e3dc_config.ladeende2;
+                 E3DC_status.prognose_kriterium=1;
+              }
+              // 2. Restliche Wattstunden des Tages < Schwelle (notwendiger Ertrag um Speicher aufzufüllen *2)
+              if(((prognose_werte.prognosis_remaining_energy_today * e3dc_config.wirkungsgrad) < ((100-fBatt_SOC)*e3dc_config.speichergroesse*10*2))&&(fBatt_SOC<90))
+              {
+                fLadeende = 100;
+                //20200516 --> auch sommerladeende reduzieren um 2h damit Kurve steiler wird, Akuu wird schneller voll geladen
+                //  reduzierung könnte eventuell auch über die zu erwartende prognose erfolgen
+                ladezeitkorrektur=2.0;
+                //20200603 --> bei schlechter Prognose kein unload -> unload auf 100 setzen
+                e3dc_config.unload = 100;
+                E3DC_status.prognose_kriterium=2;
+              }
+          }
     }
     //Prognosewerte -> Logfile
     //nur loggen, wenn geändert
@@ -592,15 +599,15 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    int cLadezeitende1 = (e3dc_config.winterminimum+((e3dc_config.sommermaximum-ladezeitkorrektur)-e3dc_config.winterminimum)/2)*3600;  //MiWa soll auch Regeleende korrigiert werden?
-    int cLadezeitende2 = (e3dc_config.winterminimum+((e3dc_config.sommerladeende-ladezeitkorrektur)-e3dc_config.winterminimum)/2)*3600;
-    int cLadezeitende3 = (e3dc_config.winterminimum-((e3dc_config.sommermaximum)-e3dc_config.winterminimum)/2)*3600; //Unload
+    int cLadezeitende1 = (e3dc_config.winterminimum+(e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600;  
+    int cLadezeitende2 = (e3dc_config.winterminimum+(e3dc_config.sommerladeende-e3dc_config.winterminimum)/2)*3600;
+    int cLadezeitende3 = (e3dc_config.winterminimum-(e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600; //Unload
 
     time_t tLadezeitende,tLadezeitende2,tLadezeitende3;  // dynamische Ladezeitberechnung aus dem Cosinus des lfd Tages. 23 Dez = Minimum, 23 Juni = Maximum
     int32_t tZeitgleichung;
-    tLadezeitende = cLadezeitende1+cos((ts->tm_yday+9)*2*3.14/365)*-(((e3dc_config.sommermaximum-ladezeitkorrektur)-e3dc_config.winterminimum)/2)*3600;  //MiWa soll auch Regeleende korrigiert werden?
-    tLadezeitende2 = cLadezeitende2+cos((ts->tm_yday+9)*2*3.14/365)*-(((e3dc_config.sommerladeende-ladezeitkorrektur)-e3dc_config.winterminimum)/2)*3600;
-    tLadezeitende3 = cLadezeitende3-cos((ts->tm_yday+9)*2*3.14/365)*-(((e3dc_config.sommermaximum)-e3dc_config.winterminimum)/2)*3600;
+    tLadezeitende = cLadezeitende1+cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600-ladezeitkorrektur*3600;  //MiWa soll auch Regeleende korrigiert werden?
+    tLadezeitende2 = cLadezeitende2+cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommerladeende-e3dc_config.winterminimum)/2)*3600-ladezeitkorrektur*3600;
+    tLadezeitende3 = cLadezeitende3-cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600;
 
 
 //    float fht = e3dc_config.ht * cos((ts->tm_yday+9)*2*3.14/365);

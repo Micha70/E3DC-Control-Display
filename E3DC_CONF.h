@@ -5,7 +5,7 @@
 //  Created by Eberhard Mayer on 16.08.18.
 //  Copyright © 2018 Eberhard Mayer. All rights reserved.
 //
-#define VERSION "2020.6.4.1.P" //Mai branch
+#define VERSION "2020.6.11.1.P" //Mai branch
 #ifndef E3DC_CONF_h
 #define E3DC_CONF_h
 
