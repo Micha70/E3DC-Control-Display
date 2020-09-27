@@ -29,12 +29,14 @@ struct powervalue WattValuesTomorrow[MAX_LINES_RET];
 struct powervalue WattHourValuesToday[MAX_LINES_RET];
 struct powervalue WattHourValuesTomorrow[MAX_LINES_RET];
 
-long last_prognose_call;
+time_t last_prognose_call;
+int int_last_ret_val;
 
 
 void Prognose_init()
 {
-	last_prognose_call=0;
+	last_prognose_call=time(0)-15*60;
+	int_last_ret_val=99;
 }
 
 // Rückgabewert 0: Prognosewerte gültig
@@ -43,23 +45,24 @@ int Prognose(remaining_delivery* remaining)
 {
 
 	time_t now = time(0);
+	struct tm currenttime;
 	//sprintf("Number of sec since January 1,1970: %lu\n",now);
-	tm *currenttime = localtime(&now);
+	localtime_r(&now, &currenttime);
 
-	long current_sec=currenttime->tm_sec+currenttime->tm_min*60+currenttime->tm_hour*60*60;
+	unsigned long current_sec=currenttime.tm_sec+currenttime.tm_min*60+currenttime.tm_hour*60*60;
+printf("Zeit bis zur nächsten Prognosebewertung %lds\n",15*60-(now-last_prognose_call));
 
-	if((current_sec-last_prognose_call) < 15*60)
-		return 0; //weniger als 15min seit letzem Aufruf
-
+	if((now-last_prognose_call) < 15*60)
+		return int_last_ret_val; //weniger als 15min seit letzem Aufruf
 
 //get date of current day
 	char current_date[20];
 
-  sprintf(current_date,"%04d-%02d-%02d",1900 + currenttime->tm_year,1 + currenttime->tm_mon,currenttime->tm_mday);
+  sprintf(current_date,"%04d-%02d-%02d",1900 + currenttime.tm_year,1 + currenttime.tm_mon,currenttime.tm_mday);
 	//printf("today %s\n",current_date);
 
 
-	last_prognose_call=current_sec;
+	last_prognose_call=now;
 
 
 
@@ -75,7 +78,7 @@ int Prognose(remaining_delivery* remaining)
 	str_anfrage += "/" + to_string(e3dc_config.dach_neigung);
 	str_anfrage += "/" + to_string(e3dc_config.dach_richtung);
 	str_anfrage += "/" + to_string(e3dc_config.anlagen_leistung);
-	//printf("8%s\n",str_anfrage.c_str());
+	//printf("Anfrage: %s\n",str_anfrage.c_str());
 
 
 	//printf("Test\n");
@@ -85,19 +88,22 @@ int Prognose(remaining_delivery* remaining)
 	//f = popen("curl -H \"Accept: text/csv\" https://api.forecast.solar/estimate/watts/49.137136/12.123933/40/0/5.7","r");
 	f = popen(str_anfrage.c_str(),"r");
 	if(!f)
-		return 1;
+		return (int_last_ret_val=1);
 
 
 	size_t n=fread(buffer,1,MAXSTRLEN,f);
-	fclose(f);
 	string str_content(buffer);
 
-
-	if(!ferror(f) and n>50) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
+  printf("Prognose1, ");
+	if(!ferror(f) and n>70) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
 	{
-		printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
+		 printf("%zu Zeichen gelesen\n",n);
 	}
-	else{return 1;}
+	else{
+		printf("nur %zu Zeichen gelesen: %s",n,str_content.c_str());
+		return (int_last_ret_val=2);
+	}
+	fclose(f);
 
 
 //printf("Test 4\n");
@@ -174,9 +180,7 @@ int index_today=0; int index_tomorrow=0;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//remittele Rückgabewerte
 	remaining->prognosis_remaining_max_power_today=0;
-	//remaining->prognosis_remaining_energy_today=0;
 	remaining->prognosis_expected_max_power_tomorrow=0;
-	//remaining->prognosis_expected_energy_tomorrow=0;
 	int i;
 
 	//printf("current_sec=%ld\n",current_sec);
@@ -214,7 +218,7 @@ int index_today=0; int index_tomorrow=0;
 	str_anfrage += "/" + to_string(e3dc_config.dach_neigung);
 	str_anfrage += "/" + to_string(e3dc_config.dach_richtung);
 	str_anfrage += "/" + to_string(e3dc_config.anlagen_leistung);
-	//printf("8%s\n",str_anfrage.c_str());
+	//printf("Anfrage: %s\n",str_anfrage.c_str());
 
 
 	//printf("Test\n");
@@ -222,20 +226,24 @@ int index_today=0; int index_tomorrow=0;
 	//f = popen("curl -H \"Accept: text/csv\" https://api.forecast.solar/estimate/watthours/49.137136/12.123933/40/0/5.7","r");
 	f = popen(str_anfrage.c_str(),"r");
 	if(!f)
-		return 1;
+		return (int_last_ret_val=3);
 
 	buffer =(char *) calloc(MAXSTRLEN+1,1);
 
 
 	n=fread(buffer,1,MAXSTRLEN,f);
-	fclose(f);
 	str_content=buffer;
+	printf("Prognose2, ");
+	if(!ferror(f) and n>70) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
+	{
+		printf("%zu Zeichen gelesen\n",n);
 
-	if(!ferror(f) and n>50) //Start only analysis, wenn mehr als 50 bytes gelesen, sonst Fehler, letzte Werte nehmen, wenn vorhanden
-	{	//printf("%zu Zeichen gelesen: %s",n,str_content.c_str());
 	}
-	else{return 1;}
-
+	else{
+		printf("nur %zu Zeichen gelesen: %s",n,str_content.c_str());
+		return (int_last_ret_val=4);
+	}
+	fclose(f);
 	free(buffer);
 
 	memset(WattHourValuesToday,0x0, sizeof(WattHourValuesToday));
@@ -303,6 +311,9 @@ int index_today=0; int index_tomorrow=0;
 	//remittele Rückgabewerte
 	remaining->prognosis_remaining_energy_today=0;
 	remaining->prognosis_expected_energy_tomorrow=0;
+	remaining->prognosis_expected_energy_today_morning=0;
+	remaining->prognosis_expected_energy_today_afternoon=0;
+
 
 	long previous_expected_value=0;
 	//printf("current_sec=%ld\n",current_sec);
@@ -318,11 +329,26 @@ int index_today=0; int index_tomorrow=0;
 
 	//letzter ermittelter Wert ist erwartete Energie für morgen
 	remaining->prognosis_expected_energy_tomorrow=WattHourValuesTomorrow[index_tomorrow-1].power;
-
-
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	return 0;
+  //ermittele Ertrag bis 13:00
+	for(i=0; i<index_today; i++)
+	{
+		//ermittele erfolgten Ertrag bis jetzt
+		if(WattHourValuesToday[i].timestamp<=60*60*13) remaining->prognosis_expected_energy_today_morning = WattHourValuesToday[i].power;
+
+		if(WattHourValuesToday[i].timestamp>60*60*13)	break;
+	}
+	//ermittele restertrag für Nachmittag (nach 13:00)
+	remaining->prognosis_expected_energy_today_afternoon=WattHourValuesToday[index_today-1].power-remaining->prognosis_expected_energy_today_morning;
+
+
+
+printf("Today MaxPower %iW RemEnergy %iW\n",remaining->prognosis_remaining_max_power_today,remaining->prognosis_remaining_energy_today);
+printf("Today ExpEnergy Morning %iW Afternoon %iW\n",remaining->prognosis_expected_energy_today_morning,remaining->prognosis_expected_energy_today_afternoon);
+printf("Tomorrow MaxPower %iW RemEnergy %iW\n",remaining->prognosis_expected_max_power_tomorrow,remaining->prognosis_expected_energy_tomorrow);
+
+	return (int_last_ret_val=0);
 
 
 }

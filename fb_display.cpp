@@ -132,30 +132,30 @@ void update_display_control(struct FBIO::FrameBuffer *pFB, struct status *status
 
 	//20200502
 	//krit/ENDE
-  MyFont.Printf(FB,5,h-82, "Krit: %d Lende: %2d%%",E3DC_status.prognose_kriterium,E3DC_status.ladeende);	
+  MyFont.Printf(FB,5,h-92, "Krit: %d Lende: %2d%%",E3DC_status.prognose_kriterium,E3DC_status.ladeende_proz);
 
 	//20200502
 	//Erw.MaxLeistung
-	MyFont.Printf(FB,5,h-72, "ErwMaxLstg: %4d W",E3DC_status.exp_max_power_today);
+	MyFont.Printf(FB,5,h-82, "ErwMaxLstg: %4d W",E3DC_status.exp_max_power_today);
 	//Erw.verbl.Ertrag
-	MyFont.Printf(FB,5,h-62, "ErwErtrag: %2.1f kWh",E3DC_status.exp_rem_energy_today);
+	MyFont.Printf(FB,5,h-72, "ErwErtrag: %2.1f kWh",E3DC_status.exp_rem_energy_today);
 
 	//AusgabeProduction
 	//snprintf(temp_buffer,sizeof(temp_buffer),"Ladelst.: %4.1f W",E3DC_status.production_w);
 	//fb_put_string(fb_info, 5, h-34, temp_buffer, strlen(temp_buffer), 0xffffff, 1, 3);
-	MyFont.Printf(FB,5,h-52,"Produktion:");
+	MyFont.Printf(FB,5,h-62,"Produktion:");
 
 	if(E3DC_status.production_w>0)
 		MyFont.SetPenColour(0, 255, 0);
 	else
 		MyFont.SetPenColour(200, 200, 200);
   //x=5+8*11=93
-	MyFont.Printf(FB,93,h-52," %4d W",E3DC_status.production_w);
+	MyFont.Printf(FB,93,h-62," %4d W",E3DC_status.production_w);
 
 	MyFont.SetPenColour(200, 200, 200);
 
 	//Ladeleistung           Ladelstg.:
-	MyFont.Printf(FB,5,h-42,"Ladelstg.: ");
+	MyFont.Printf(FB,5,h-52,"Ladelstg.: ");
 
 
 	if(E3DC_status.chargepower_w>0)
@@ -166,17 +166,16 @@ void update_display_control(struct FBIO::FrameBuffer *pFB, struct status *status
 		MyFont.SetPenColour(200, 200, 200);
 
 	//Ladeleistung x=5+8*11=93
-	MyFont.Printf(FB,93,h-42," %4d W",E3DC_status.chargepower_w);
+	MyFont.Printf(FB,93,h-52," %4d W",E3DC_status.chargepower_w);
 
 	MyFont.SetPenColour(200, 200, 200);
+	//Ausgabe Regelbeginn / Regelende
+	MyFont.Printf(FB,5,h-42,"RB: %s RE: %s",E3DC_status.regelbeginn,E3DC_status.regelende);
+
   //Ausgabe Ladebeginn
-	//snprintf(temp_buffer,sizeof(temp_buffer),"Ladebeginn: %s",E3DC_status.start_of_charge);
-	//fb_put_string(fb_info, 5, h-22, temp_buffer, strlen(temp_buffer), 0xffffff, 1, 3);
-	MyFont.Printf(FB,5,h-32,"Ladebeginn:  %s",E3DC_status.start_of_charge);
+	MyFont.Printf(FB,5,h-32,"          LE: %s",E3DC_status.ladeende);
 
 	//Ausgabe Safed today
-	//snprintf(temp_buffer,sizeof(temp_buffer),"Ladebeginn: %s",E3DC_status.start_of_charge);
-	//fb_put_string(fb_info, 5, h-22, temp_buffer, strlen(temp_buffer), 0xffffff, 1, 3);
 	MyFont.Printf(FB,5,h-22, "Safed td:  %2.1f kWh",E3DC_status.safed_today_kwh);
 
 	//Ausgabe Datum / Zeit

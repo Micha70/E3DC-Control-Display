@@ -1,6 +1,11 @@
-# E3DC-Control-Display
+# E3DC-Control-Display-Prognose
+
 Prinzipiell gelten alle Hinweise von Eberhard, s.u..
 
+Wegen Verwendung von  fbtft_device läuft das Programm nicht auf dem neuesten Raspi Kernel!!!
+  --> bei mir wird aktuell 4.19.118+ verwendet.
+
+## Displayansteuerung
 + Installieren: git clone https://github.com/Micha70/E3DC-Control-Display.git
 + nach E3DC-Control-Display wechseln und mit make compilieren
 ```
@@ -44,7 +49,7 @@ PIN12 (BCM18 PWM0)   -----|_____|--- ||->|
                                          -
                                          |
                                          |------> Display (Pin 8)
-                    
+
 ```
 
 PWM funktioniert nur wenn E3DC-Control-Display mit Sudo Rechten gestartet wird. Ansonsten wird nur zwischen 100% und 0% umgeschaltet.
@@ -64,11 +69,69 @@ Mein E3DC.sh mit sudo Rechten:
 cd E3DC-Control-Display
 while true; do
 sudo ./E3DC-Control-Display
-sleep  300 
+sleep  300
 echo "Neustart durchgefÃ¼hrt"
 done
 ```
+---
+## Prognose
 
+**Aktivierung** erfolgt in e3dc.confic.txt:
+```
+prognose = true
+```
+Folgende Parameter müssen zusätzlich gesetzt werden:
+```
+longitude = 12.100000
+latitude = 49.100000
+dach_richtung = 22
+dach_neigung = 40
+wirkungsgrad = 0.8
+anlagen_leistung = 5.7
+grundbedarf = 300
+```
+
+*latitude - latitude of location, -90 (south) … 90 (north)
+*longitude - longitude of location, -180 (west) … 180 (east)
+*dach_neigung - plane declination, 0 (horizontal) … 90 (vertical)
+*dach_richtung - plane azimuth, -180 … 180 (-180 = north, -90 = east, 0 = south, 90 = west, 180 = north)
+*anlagen_leistung - installed modules power in kilo watt
+*wirkungsgrad - Korrekturfaktor zwischen Prognose und wirklicher Leistung der Anlage
+*grundbedarf - Grundbedarf des Hauses, was wird ohne größere Verbraucher benötigt (duchschn. Verbrauch der Nacht)
+
+
+**Erklärung:**
+Als Prognose wird die Prognose von http://doc.forecast.solar/doku.php?id=api:weather verwendet. Da nur 10 Prognoseabfragen pro Stunde möglich sind, wird dies automatisch vom Programm berücksichtigt.
+
+**Prognoseermittlung und Einfluss:**
+Bei der Prognoseermittlung wird die zu erwartende verbleibende maximale Leistung und der verbleibende Ertrag bezogen auf die Uhrzeit ermittelt. Diese Prognosewerte werden auch im Logfile abgelegt:
+PROGNOSE Uhrzeit max.Leistung verbleibenderErtrage Kriterium
+
+*Kriterium = 0:* kein Eingriff wegen niedriger Prognose
+
+*Kriterium = 1:* prognostizierte verbleibende max Leistung (korrigiert mit Wirkungsgrad der Anlage) < (Einspeiselimit + Grundbedarf) und SOC < 70
+
+--> fLadeende wird auf ladeende2 gesetzt
+
+*Kriterium = 2:* prognostizierter Ertrag (korrigiert mit Wirkungsgrad der Anlage) < ( notwendige Energie um Akku auf 100% aufzuladen ) * 2 und SOC < 90
+
+--> fLadeende wird auf 100% gesetzt
+
+--> RegelEnde und LadeEnde werden um 2h vorgezogen
+
+--> Unload = 100 Entladen der Batterie wird nicht durchgeführt
+
+*Kriterium = 3:* prognostizierter Ertrag für den Nachmittag (korrigiert mit Wirkungsgrad der Anlage) < ( 1.5* Akku Kapazität )
+--> fLadeende/Ladeschwelle wird auf 100% gesetzt
+
+--> RegelEnde und LadeEnde werden um 4h vorgezogen
+
+--> Unload = 100 Entladen der Batterie wird nicht durchgeführt
+
+--> Kriterium 3 wird eingelogged für kompletten Tag, solange SOC<90%
+
+
+---
 # E3DC-Control
 
 Viele haben bemängelt, das der Speicher von E3DC über keine ausreichende und funktionsfähige Steuerung zur prognosebasierende Laden verfügt.
@@ -172,7 +235,7 @@ obererLadekorridor = 1500  // bei der PRO wird 4500 empfohlen
 minimumLadeleistung = 300
 maximumLadeleistung = 3000  // 1500 bei mini, 3000 E12 und 9000/1200 PRO
 wrleistung = 12000          // AC-Leistung des WR, 4600 bei mini
-ladeschwelle = 15           // Unter 15% SoC wird immer geladen 
+ladeschwelle = 15           // Unter 15% SoC wird immer geladen
 ladeende = 85               // Ziel SoC 85% zwischen
 winterminimum = 11		   // winterminimum wintersonnenwende
 sommermaximum = 14           // sommermaximum sommersonnenwende
@@ -181,13 +244,13 @@ sommerladeende = 18.5     // im Sommer wird das Laden auf 100% verzögert
 htmin = 30                // Speicherreserve 30% bei winterminimum
 htsockel = 10             // sockelwert bei Tag-Nachtgleiche
 hton = 5                  // Begin Hochtarif
-htoff = 14                // Ende Hochtarif 
+htoff = 14                // Ende Hochtarif
 htsat = true              // Hochtarif Samstag
 htsun = true              // Hochtourig Sonntag
 debug = false             // zusätzliche debug ausgaben
 ```
 
-// anpassen und als 
+// anpassen und als
 //`e3dc.config.txt`
 // abspeichern.
 

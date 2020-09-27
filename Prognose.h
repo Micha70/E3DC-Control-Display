@@ -4,6 +4,8 @@
 struct def_remaining_delivery{
   long prognosis_remaining_max_power_today;
   long prognosis_remaining_energy_today;
+  long prognosis_expected_energy_today_morning;
+  long prognosis_expected_energy_today_afternoon;
   long prognosis_expected_max_power_tomorrow;
   long prognosis_expected_energy_tomorrow;};
 

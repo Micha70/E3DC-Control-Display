@@ -12,7 +12,9 @@ extern void update_display_control_status_message(struct FBIO::FrameBuffer *pFB,
 
 struct status
 {
-	char start_of_charge[10];
+	char ladeende[10];
+	char regelbeginn[10];
+	char regelende[10];
 	int32_t production_w;
 	int32_t chargepower_w;
 	float PV_prod_kw;
@@ -22,7 +24,7 @@ struct status
 	int32_t exp_max_power_today;
 	float exp_rem_energy_today;
 	int prognose_kriterium;
-	int ladeende;
+	int ladeende_proz;
 };
 
 typedef struct status status;
