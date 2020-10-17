@@ -355,7 +355,7 @@ bool GetConfig()
         e3dc_config.htoff = 24*3600; // in Sekunden
         e3dc_config.htsockel = 0;
         e3dc_config.peakshave = 0;
-        e3dc_config.wbmode = 4;											   
+        e3dc_config.wbmode = 4;
         e3dc_config.wbminlade = 1000;
         //////////////////////////////////////////////////
         // MiWa 20200501 for prognose parameter
@@ -560,12 +560,12 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
     float fLadeende = e3dc_config.ladeende;
     float fLadeende2 = e3dc_config.ladeende2;
     float fLadeende3 = e3dc_config.unload;
-	
+
 	if (cos((ts->tm_yday+9)*2*3.14/365) > 0)
     {
     fLadeende = (cos((ts->tm_yday+9)*2*3.14/365))*(100-fLadeende)+fLadeende;
     fLadeende2 = (cos((ts->tm_yday+9)*2*3.14/365))*(100-fLadeende2)+fLadeende2;
-    fLadeende3 = (cos((ts->tm_yday+9)*2*3.14/365))*(100-fLadeende3)+fLadeende3;			   
+    fLadeende3 = (cos((ts->tm_yday+9)*2*3.14/365))*(100-fLadeende3)+fLadeende3;
     }
 
 
@@ -769,7 +769,7 @@ sprintf(E3DC_status.ladeende,"%02ld:%02ld", ((tLadezeitende2+timeZone_diff)/3600
           tLadezeit_alt=t; // alle 300sec Berechnen
 
 // Berechnen der Ladeleistung bis zum nächstliegenden Zeitpunkt
-                
+
         iFc = (fLadeende - fBatt_SOC)*e3dc_config.speichergroesse*10*3600;
           if ((tLadezeitende-t) > 300)
               iFc = iFc / (tLadezeitende-t); else
@@ -790,7 +790,7 @@ sprintf(E3DC_status.ladeende,"%02ld:%02ld", ((tLadezeitende2+timeZone_diff)/3600
       }
      }
             else
- 
+
             {       iFc = e3dc_config.maximumLadeleistung;
                     iMinLade =  e3dc_config.obererLadekorridor;
             }
@@ -800,7 +800,7 @@ sprintf(E3DC_status.ladeende,"%02ld:%02ld", ((tLadezeitende2+timeZone_diff)/3600
             else
                 printf("ML1 %i ML2 %i RQ %i ",iMinLade, iMinLade2,iFc);
             printf("GMT %2ld:%2ld ZG %d ",tLadezeitende/3600,tLadezeitende%3600/60,tZeitgleichung);
-        
+
     printf("E3DC: %s", asctime(ts));
 
     //MIWA added 20200503
@@ -1071,47 +1071,47 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
 /*
  Die Ladeleistung der Wallbox wird nach verfügbaren PV-Überschussleistung gesteuert
  Der WBModus gibt die Priorität der Wallbox gegenüber dem E3DC Speicher vor.
- 
+
  Der E3DC Speicher hat Priorität
- 
+
  Der angeforderte Ladeleistung des E3DC wird durch iBattLoad angezeigt.
  der lineare Ladebedarf wird durch iMinLoad ermittelt
  die berechnete dynamische Ladeleistung wird in iFc ermittelt.
  ffAvBatterie und fAvBatterie900 zeigt die durchschnittliche Ladeleistung
  der letzen 120 bzw. 900 Sekunden an.
- 
+
  WBModus = 0 KEINE STEUERUNG
- 
+
  WBModus = 1 NUR Überschuss > einspeiselimit
 
  Der E3DC Speicher hat Priorität
  Die Wallbox kann nur die Überschussleistung zur Verfügung gestellt werden
  und speist sich aus der verfügbaren fPower_Grid > einspeiselimit-iWBMinimumPower.
- 
+
  WBModus = 2 NUR Überschuss
 
- 
+
  Der E3DC Speicher hat Priorität
  Die Wallbox kann nur die Überschussleistung zur Verfügung gestellt werden
  und speist sich aus der verfügbaren fPower_Grid > iWBMinimumPower.
  Entspricht weitgehend dem jetzigen Verfahren.
- 
+
  der 1/4h Wert = fAvPower_Grid900 wird so geführt, dass er dem kleineren Wert von
  MinLoad und iFC entspricht.  MinLoad und iFC sollten im unteren Bereich
  des Ladekorridors (obererLadekorridor) geführt werden. Mit dem Ziel von MinLoad = iFc.
- 
+
  Bei SoC >= ladeende2 wird fAvPower_Grid900 so geführt, dass diese um Null pendelt.
  Bei gridüberschuss von 100/200 oder iPower_Bat > 700 die Ladeleistung angeboben,
  Bei iPower_Bat < -700 oder fAvPower_Grid900 < 100 wird das Laden reduziert.
- 
+
  Das Laden wird beendet bei fAvPower_Grid900 < -200.
  Das Laden wird neu gestartet bei fAvPower_Grid900 > 100 +
  verfügbare PV-Leistung (iPower_Bat-fPower_Grid)
  und verfügbare Speicherleistung (e3dc_config.maximumLadeleistung -700)
  großer als die iWBMinimumPower ist.
- 
+
  WBModus = 3
- 
+
  Der E3DC Speicher hat immer noch Priorität, untersützt aber die Wallbox stärker
  bei temporäre Ertragsschwankungen, der E3DC-Speicher wird so geführt,
  das immer die maximale Ladeleistung aufgenommen werden kann.
@@ -1120,22 +1120,22 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
  der 1/4h Wert = fAvPower_Grid900 wird so geführt, dass er dem kleineren Wert von
  MinLoad und iFC nahe kommt dabei sollte iBattload immer dem
  e3dc_config.maximumLadeleistung entsprechen. MinLoad und iFC < WBminlade
- 
- 
+
+
  Zielparameter: fAvPower_Grid900 = 2*Minload - WBminlade und
                 fAvPower_Grid    = 2*iFc - e3dc_config.maximumLadeleistung
- 
+
  Dies wird wie folgt erreicht:
- 
+
  Die Ladeleistung wird angehoben, wenn iBattload unter e3dc_config.maximumLadeleistung
  fällt oder fAvPower_Grid > 2*iFc - e3dc_config.maximumLadeleistung steigt
- 
+
  dabei wird auch in Kauf genommen, dass die Batterie zeitweise entladen wird.
- 
+
  WBModus = 4
- 
+
  Hier bekommt die Wallbox die Priorität, der Speicher wird bis auf Ladeschwelle entladen, aber der Bezug aus dem Netz wird vermieden.
- 
+
  Die Laden wird gestartet sobald verfügbare PV-Leistung (iPower_Bat-fPower_Grid)
  und verfügbare Speicherleistung (e3dc_config.maximumLadeleistung -700)
  großer als die iWBMinimumPower ist.
@@ -1220,7 +1220,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
               idynPower = (iRefload - (fAvBatterie900+fAvBatterie)/2)*-1;
                 idynPower = idynPower + e3dc_config.maximumLadeleistung -iBattLoad;
               iPower = iPower + idynPower;
-                
+
               break;
                 case 5:
                 case 6:
@@ -1240,7 +1240,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
 
                 idynPower = (e3dc_config.wbminlade-iRefload)*(e3dc_config.wbmode-3);
                 iPower = iPower + idynPower;
-                            
+
                           break;
             case 9:
                 iPower = e3dc_config.maximumLadeleistung*.9+iPower_Bat-fPower_Grid*2;
@@ -1249,8 +1249,8 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
         }
 
 // im Sonnenmodus nur bei PV-Produktion regeln
-        
-        
+
+
         if (iAvalPowerCount < 3) iAvalPowerCount++;
         iAvalPower = iAvalPower*(iAvalPowerCount-1)/iAvalPowerCount;
         iAvalPower = iAvalPower + iPower/iAvalPowerCount;
@@ -1258,7 +1258,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
         if ((iAvalPower>0)&&bWBLademodus&&iPower_PV<100)
             iAvalPower = 0;
 
-        
+
         if (iAvalPower > (e3dc_config.maximumLadeleistung*.9+iPower_Bat-fPower_Grid))
               iAvalPower = e3dc_config.maximumLadeleistung*.9+iPower_Bat-fPower_Grid;
         // Speicher nur bis 5-7% entladen
@@ -1267,11 +1267,11 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
         if (iAvalPower < (e3dc_config.maximumLadeleistung*-0.9-iPower_Bat-fPower_WB))
             iAvalPower = e3dc_config.maximumLadeleistung*-0.9-iPower_Bat-fPower_WB;
 
-        
+
         if (iWBStatus == 1)
         {
 
-            
+
             if (bWBmaxLadestrom)  {//Wenn der Ladestrom auf 32, dann erfolgt keine
             if ((fBatt_SOC>cMinimumladestand)&&(fAvPower_Grid<400)) {
 //Wenn der Ladestrom auf 32, dann erfolgt keine Begrenzung des Ladestroms im Sonnenmodus
@@ -1298,7 +1298,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
     else WBchar6[1] = 32;
 }
 */
-        
+
         if (fBatt_SOC > iDyLadeende) iDyLadeende = fBatt_SOC;
         if ((fPower_WB == 0)&&(iWBStatus==1)&&bWBLademodus) {
             iDyLadeende = cMinimumladestand;
@@ -1340,9 +1340,9 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 (WBchar6[1]<iMaxcurrent)){
                 WBchar6[1]++;
                 for (int X1 = 3; X1 < 20; X1++)
-                    			
+
                 if ((iAvalPower > (X1*iWBMinimumPower/6)) && (WBchar6[1]<iMaxcurrent)) WBchar6[1]++; else break;
-                    
+
                 createRequestWBData(frameBuffer);
 //                if ((WBchar6[1]>16)&&(WBChar_alt<= 16)) iWBStatus = 30; else
                     iWBStatus = 12;
@@ -1358,7 +1358,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 WBchar6[1]--;
                 for (int X1 = 2; X1 < 20; X1++)
                     if ((iAvalPower <= ((iWBMinimumPower/6)*-X1))&& (WBchar6[1]>7)) WBchar6[1]--; else break;
-                
+
                 createRequestWBData(frameBuffer);
                 WBChar_alt = WBchar6[1];
 //                if (WBchar6[1]>16) iWBStatus = 15; else // Länger warten bei hohen Stömen
@@ -1367,8 +1367,8 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
             } else
 // Bedingung zum Wallbox abschalten ermitteln
 //
-                
-                
+
+
             if ((fPower_WB>100)&&(
                                   ((iPower_Bat-fPower_Grid < (e3dc_config.maximumLadeleistung*-0.9))&&(fBatt_SOC < 94))
                 || ((fPower_Grid > 3000)&&(iPower_Bat<1000))   //Speicher > 94%
@@ -1389,7 +1389,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                         createRequestWBData(frameBuffer);
                     WBchar6[1]=5;
                     WBChar_alt = WBchar6[1];
-                    
+
                     if ((WBchar6[4] == 0) || (WBchar6[1] == 6))
                         iWBStatus = 7; else // Warten bis Neustart oder bei 6A
                         iWBStatus = 20;  // Warten bis Neustart
@@ -1997,7 +1997,7 @@ int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
                                                 {
                                                     float fPower = protocol->getValueAsFloat32(&container[n]);
                                                     printf(" %0.0fV", fPower);
-                                                    
+
                                                 }
                                             }
                                             protocol->destroyValueData(container);
@@ -2169,7 +2169,7 @@ int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
                                         printf("%02X", WBchar[x]);
                                     printf("\n");
 */
-                                    
+
                                     bWBLademodus = (WBchar[0]&1);
                                     WBchar6[0]=WBchar[0];
                                     printf(" \n");
