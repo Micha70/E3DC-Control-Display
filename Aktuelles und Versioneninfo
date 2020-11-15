@@ -1,5 +1,10 @@
 Idee: bei schlechterer Prognose ladebeginn 2h vorziehen
 
+Version 2020.11.07.P
+  Ertrag Nachmittag ab 12:00 berücksichtigt / (bis jetz Nachmittagsertrag war ab 13:00, führte dazu dass Kriterium 3 auch bei gutem Ertrag in November erreicht wurde)
+  update of readme, hint for installation of display
+
+
 Version 2020.10.17.P
 	Merge mit Commit 283
 	Steuerung Wallbox

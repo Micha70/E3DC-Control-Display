@@ -1,5 +1,7 @@
 //Prognose.cpp
 // MiWa Version 2020.05.01
+// MiWa Version 2020.11.07
+//		Nachmittagsprognose started ab 12:00 (zuvor war 13:00)
 
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
@@ -331,15 +333,15 @@ int index_today=0; int index_tomorrow=0;
 	remaining->prognosis_expected_energy_tomorrow=WattHourValuesTomorrow[index_tomorrow-1].power;
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //ermittele Ertrag bis 13:00
+  //ermittele Ertrag bis 12:00
 	for(i=0; i<index_today; i++)
 	{
 		//ermittele erfolgten Ertrag bis jetzt
-		if(WattHourValuesToday[i].timestamp<=60*60*13) remaining->prognosis_expected_energy_today_morning = WattHourValuesToday[i].power;
+		if(WattHourValuesToday[i].timestamp<=60*60*12) remaining->prognosis_expected_energy_today_morning = WattHourValuesToday[i].power;
 
-		if(WattHourValuesToday[i].timestamp>60*60*13)	break;
+		if(WattHourValuesToday[i].timestamp>60*60*12)	break;
 	}
-	//ermittele restertrag für Nachmittag (nach 13:00)
+	//ermittele restertrag für Nachmittag (nach 12:00)
 	remaining->prognosis_expected_energy_today_afternoon=WattHourValuesToday[index_today-1].power-remaining->prognosis_expected_energy_today_morning;
 
 

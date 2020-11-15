@@ -6,6 +6,12 @@ Wegen Verwendung von  fbtft_device läuft das Programm nicht auf dem neuesten Ra
   --> bei mir wird aktuell 4.19.118+ verwendet.
 
 ## Displayansteuerung
++ Installation der Treiber für Displayansteuerung
+* sudo modprobe fbtft_device name=sainsmart18
+*Create /etc/modprobe.d/fbtft.conf”:
+   And add line
+   options fbtft_device name=sainsmart18 gpios=reset:25,dc:24,cs:8 rotate=90 fps=30 speed=48000000
+
 + Installieren: git clone https://github.com/Micha70/E3DC-Control-Display.git
 + nach E3DC-Control-Display wechseln und mit make compilieren
 ```
@@ -13,6 +19,20 @@ cd E3DC-Control-Display
 make
 ```
 --> weitere Konfiguration siehe unten
+
+wenn fatal error: bcm2835.h: No such file or directory
+# download the latest version of the library, say bcm2835-1.xx.tar.gz, then:
+```
+cd /home/pi/
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz     --> you can find the last version on http://www.airspayce.com/mikem/bcm2835/
+tar zxvf bcm2835-1.60.tar.gz
+cd bcm2835-1.60
+./configure
+make
+sudo make check
+sudo make install
+```
+
 
 + verwendetes Display: https://www.amazon.de/gp/product/B078J5TS2G/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1
 + Anschluss Display:
@@ -121,7 +141,7 @@ PROGNOSE Uhrzeit max.Leistung verbleibenderErtrage Kriterium
 
 --> Unload = 100 Entladen der Batterie wird nicht durchgeführt
 
-*Kriterium = 3:* prognostizierter Ertrag für den Nachmittag (korrigiert mit Wirkungsgrad der Anlage) < ( 1.5* Akku Kapazität )
+*Kriterium = 3:* prognostizierter Ertrag für den Nachmittag (nach 12:00) (korrigiert mit Wirkungsgrad der Anlage) < ( 1.5* Akku Kapazität )
 --> fLadeende/Ladeschwelle wird auf 100% gesetzt
 
 --> RegelEnde und LadeEnde werden um 4h vorgezogen
