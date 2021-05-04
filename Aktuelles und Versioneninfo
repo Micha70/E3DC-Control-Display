@@ -1,8 +1,141 @@
+Idee: bei schlechterer Prognose ladebeginn 2h vorziehen
+
+Version 2021.04.07.P
+	Merge mit Commit 333
+
+Version 2021.03.06
+  neuer Startparameter -nodisplay
+
+
+Version 2021.02.28.P
+  vor 6:00 Kriterium freigeben, falls eingelogged
+
+
+Version 2020.11.07.P
+  Ertrag Nachmittag ab 12:00 berücksichtigt / (bis jetz Nachmittagsertrag war ab 13:00, führte dazu dass Kriterium 3 auch bei gutem Ertrag in November erreicht wurde)
+  update of readme, hint for installation of display
+
+
+Version 2020.10.17.P
+	Merge mit Commit 283
+	Steuerung Wallbox
+
+	neue Parameter
+
+	wbmode = 5
+	wbminlade = 1000
+
+	0  keine Steuerung
+	1  nur laden starten, wenn sonst abgeregelt werden muss
+	2  Laden nur aus reinem Überschuss
+	3  Laden, aber mit Priorität Hausspeicher
+	4  Leitwert ist wbminlade d.h. Hausspeicher wird nur verzögert aber bevorzugt geladen
+	5..8  Leitwert ist wbminlade
+	mit  wbmode wird die Priorität der Wallbox eingestellt.
+	bei 5 wird sachte gesteuert, die bestehende Speicherreserve wird kaum angefasst.
+	bei 8 wird der Speicher soweit genutzt wie es die Einhaltungen wbminlade erlaubt .
+
+	9 Die Wallbox hat Priorität und nutzt auch den Speicher um eine möglichst hohe Ladeleistung ohne Netzbezug zu ermöglichen. Dabei kann auch der Hausspeicher ganz entladen werden.
+	Also nur sinnvoll, wenn man weiß, das nach Autoladeende noch ausreichend Zeit besteht, dass sich der Hausspeicher wieder füllen kann.
+
+Version 2020.09.27.P
+	sync framebuffer.cpp mit orig version von git (https://github.com/HamAndEggs/FrameBuffer)
+	ändern von Kriterium 3:
+	  berechnen Ertrags-Prognose vor 13:00 und Ertrags-Prognose nach 13:00
+	  wenn Ertagsprogonose nach 13:00<1.5xBattkapazität dann Kriterium 3 (Möglichst viel am Morgen Laden, wenn Nachmittag keine/wenig Sonne scheint)
+
+Version 2020.08.15.P
+bugfix wegen fehler 3 bei Prognoseermittelung ferror(f) aufgerufen, nach fclose(f)
+
+Version 2020.06.11.1.P
+Für Kriterium 3 -> Ladezeitkorrektur -4h
+Gleichung für Regelende / Ladezeitende geändert
+
+Version 2020.06.5.1.P
+Kriterium 3 für ganzen Tag einloggen, solange SOC<90%
+Kriterium 3 --> Ladeschwelle auf 100% setzen
+
+Version 2020.06.4.1.P
+Aufzeichung safedtoday.txt nochmals korrigiert, soll um 22:00 abgespeichert werden (1malig)
+Kriterium 3 eingeführt
+
+Version 2020.06.3.1.P
+bei schlechter Prognose Kriterium 2 den unload verhindern
+Kriterium 1 nur bei SOC<70% anwenden
+Aufzeichnung safedtoday.txt um 22:00
+
+Version 2020.05.30.1.P
+Anzeige RB, RE, LB im Display
+Aufzeichnung safedtoday.txt funktioniert nicht bei Abschaltung WLAN
+
+Version 2020.5.23.1.P
+bei Kriterium 2 Ladeende = 100%
+Problem mit Uhrzeit in Logfle beseitigt
+
+Version 2020.5.21.2.P
+noch ein bugfix
+
+Version 2020.5.21.1.P
+Verschiedene Updates zur Prognose
+Beschreibung in README.md
+RB, RE und LE werden im Logfile aufgezeichnet
+
+Version 2020.5.16.0
+
+Die DEFINITION für PATH wurde entfernt, diese wäre primär für den Entwickler vorgesehen.
+Eine abweichende Angabe für die Konfugurationsdatei kann als runtime Parameter übergeben werden.
+
+Version 2020.5.15.1
+
+Gelegentlich gab es Fehlermeldungen des RSCP. Diese Fehlermeldungen wurden in die Logfile verschoben, so dass sie auch
+besser nachverfolgt werden können.
+
+Version 2020.5.11.0
+
+die Änderungen aus 2020.5.9.1 wurden entfernt.
+Statt dessen ist es möglich, über einen runtimeparameter beim starten des Programmes als argument
+eine eigene configurationsdatei anzugeben. Es kann der relative oder absolute path mit angegeben werden.
+
+Beispiel:
+
+E3DC-Control -config /config/E3DC/e3dc.config.txt
+
+Version 2020.5.9.1
+
+neuer pfad für e3dc.config.txt
+#define CONF_PATH2 "/config/E3DC/"
+
+Version 2020.5.9.0
+
+die letzte Änderung ging zu weit, sie ließ nur unload bis auf ladeende2 zu.
+Ansonsten einige kosmetische Korrekturen
+
+Version 2020.5.6.1
+
+es wird bis zum Zeitpunkt winterminimum entladen wenn der SoC > ladeende ist.
+Danach wird bis zum Regelzeitraumende nur entladen, wenn der SoC > ladeende 2 ist.
+
+
+
+version 2020.5.4.0
+
+Die e3dc.config.txt wurde nur am aktuellem Tag neueingelesen. Das geht jetzt immer.
+Die Statistiken wurden erweiter.
+Ü = Überschuss über dem einpeiselimit. Das würde man bei z.B. 70% hart verlieren
+td = Saved today
+WB = Wenn man eine Wallbox hat, sieht man hier, was man über das eAuto Laden gerettet hat.
+yd = Der Wert vom Saved today des Vortages
+
+version 2020.5.3.0
+
+Man kann nie genug testen, der Zeitstempel zur Auswertung der savetoday funktion rutschte im Zuge der
+Programmerweiterung an die falsche Stelle.
+
 version 2020.5.2.1
 
 Für besondere Situation und zur Dokumentation der an E3DC übermittelten Anweisungen können diese in einer Logfile
-geschrieben werden (debug = true). Um zu verhindern, das die Logfiles im Laufe der Zeit zu groß werden, 
-werde diese nach 4 Tagen überschrieben. Um die SSD nicht unnötig zu belasten sollte 
+geschrieben werden (debug = true). Um zu verhindern, das die Logfiles im Laufe der Zeit zu groß werden,
+werde diese nach 4 Tagen überschrieben. Um die SSD nicht unnötig zu belasten sollte
 die Logfile einer RAMDisk gespeichert werden. (logfile = /RAMDisk/logfile)
 Die RAMDisk ist vorher zu erstellen.
 
@@ -15,7 +148,7 @@ logfile
 
 version 2020.5.2.0
 
-Auf vielfachen Wunsch wird nächtens eine Datei mit den "savedtoday" Daten erstellt bzw. fortgeschrieben. 
+Auf vielfachen Wunsch wird nächtens eine Datei mit den "savedtoday" Daten erstellt bzw. fortgeschrieben.
 Einfach mit nano savetoday.txt im Verzeichnis E3DC-Control aufrufen.
 
 Ein Eintrag wird nur erstellt, wenn savedtoday größer 0 ist.
