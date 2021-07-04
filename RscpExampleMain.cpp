@@ -94,7 +94,7 @@ static time_t tE3DC, tWBtime;
 static int32_t iFc, iMinLade,iMinLade2; // Mindestladeladeleistung des E3DC Speichers
 static float_t fL1V=230,fL2V=230,fL3V=230;
 static int iDischarge = -1;
-char cWBALG;			
+char cWBALG;
 static bool bWBLademodus; // Lademodus der Wallbox; z.B. Sonnenmodus
 static bool bWBConnect; // True = Dose ist verriegelt x08
 static bool bWBStart; // True Laden ist gestartet x10
@@ -646,8 +646,8 @@ int LoadDataProcess(SRscpFrameBuffer * frameBuffer) {
 
    time_t tLadezeitende,tLadezeitende2,tLadezeitende3;  // dynamische Ladezeitberechnung aus dem Cosinus des lfd Tages. 23 Dez = Minimum, 23 Juni = Maximum
     int32_t tZeitgleichung;
-    tLadezeitende = cLadezeitende1+cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600;
-    tLadezeitende2 = cLadezeitende2+cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommerladeende-e3dc_config.winterminimum)/2)*3600;
+    tLadezeitende = cLadezeitende1+cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600-ladezeitkorrektur*3600;  //MiWa soll auch Regeleende korrigiert werden?
+    tLadezeitende2 = cLadezeitende2+cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommerladeende-e3dc_config.winterminimum)/2)*3600-ladezeitkorrektur*3600;
     tLadezeitende3 = cLadezeitende3-cos((ts->tm_yday+9)*2*3.14/365)*-((e3dc_config.sommermaximum-e3dc_config.winterminimum)/2)*3600;
 
 
@@ -1174,23 +1174,23 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
  und verfügbare Speicherleistung (e3dc_config.maximumLadeleistung -700)
  großer als die iWBMinimumPower ist.
  Das Laden wird beendet bei Gridbezug > 100/200 und bei der Unterschreitung der Ladeschwelle.
- 
+
  Unterstützung Teslatar
- 
+
  Teslatar ist ein eigenständiges Python Program, dass auf dem Raspberry Pi läuft.
- 
+
  Im Zusammenhang damit gibt es auch noch ein Problem mit der Wallbox, da Sie einfach
  auf den Zustand "gestoppt" springt, was ein späteres gesteuertes Laden verhindert.
  Deswegen wird zwischen 21:00 GMT und 5:00 GMT die Ladesperre der Wallbox überwacht
  Die Einstellung der Ladestromstärke auf 30A löst die Überwachung erst aus.
- 
-											    
+
+
  */
 
     if (iWBStatus == 0)  {
 
         iMaxBattLade = e3dc_config.maximumLadeleistung*.9;
-        
+
         memcpy(WBchar6,"\x00\x06\x00\x00\x00\x00",6);
         WBchar6[1]=WBchar[2];
 
@@ -1198,16 +1198,16 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
             bWBmaxLadestrom = true; else
             bWBmaxLadestrom = false;
 
-        
+
             if (WBchar[2] > 4)
             iWBStatus = 5;
             else {
 //                iWBStatus= 1;
                 return 0;}
-        
+
 //            createRequestWBData(frameBuffer);
     }
-    
+
     if ((e3dc_config.wbmode>0)) // Dose verriegelt, bereit zum Laden
     {
         int iRefload,iPower=0;
@@ -1276,7 +1276,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
               idynPower = (iRefload - (fAvBatterie900+fAvBatterie)/2)*-1;
                 idynPower = idynPower + e3dc_config.maximumLadeleistung -iBattLoad;
               iPower = iPower + idynPower;
-                
+
               break;
                 case 5:
                 case 6:
@@ -1304,7 +1304,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 iPower = iPower + idynPower;
 //                if iPower_Bat < 0 iPower = iPower + iPower_Bat;
 // Wenn Batterie entladen wird, einbremsen + Abschalten auslösen
-                            
+
                           break;
             case 9:
                 iPower = e3dc_config.maximumLadeleistung*.9+iPower_Bat-fPower_Grid*2;
@@ -1313,8 +1313,8 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
         }
 
 // im Sonnenmodus nur bei PV-Produktion regeln
-        
-        
+
+
         if (iAvalPowerCount < 3) iAvalPowerCount++;
         iAvalPower = iAvalPower*(iAvalPowerCount-1)/iAvalPowerCount;
         iAvalPower = iAvalPower + iPower/iAvalPowerCount;
@@ -1322,7 +1322,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
         if ((iAvalPower>0)&&bWBLademodus&&iPower_PV<100)
             iAvalPower = 0;
 
-        
+
         if (iAvalPower > (e3dc_config.maximumLadeleistung*.9+iPower_Bat-fPower_Grid))
               iAvalPower = e3dc_config.maximumLadeleistung*.9+iPower_Bat-fPower_Grid;
         // Speicher nur bis 5-7% entladen
@@ -1332,13 +1332,13 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
             iAvalPower = -iMaxBattLade+iPower_Bat-fPower_Grid-fPower_WB;
 
         if (iPower <= -20000) iAvalPower = iPower;
-        
-        
+
+
 //        if ((iWBStatus == 1)&&(bWBConnect)) // Dose verriegelt
-        if (iWBStatus == 1) // 
+        if (iWBStatus == 1) //
         {
 
-            
+
             if (bWBmaxLadestrom)  {//Wenn der Ladestrom auf 32, dann erfolgt keine
             if ((fBatt_SOC>cMinimumladestand)&&(fAvPower_Grid<400)) {
 //Wenn der Ladestrom auf 32, dann erfolgt keine Begrenzung des Ladestroms im Sonnenmodus
@@ -1350,7 +1350,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
         }
             }     else if ((WBchar6[1] > 6)&&(fPower_WB == 0)) WBchar6[1] = 6;
 // Immer von 6A aus starten
-        
+
 // Ermitteln Startbedingungen zum Ladestart der Wallbox
 // Laden per Teslatar, Netzmodus, LADESTROM 30A
 //            if ((WBchar[2] == 30) && not(bWBLademodus)&&cWBALG&64) {
@@ -1366,7 +1366,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 sprintf(Log,"WB starten %s", strtok(asctime(ptm),"\n"));
                 WriteLog();
             };
-            
+
         if ( (fPower_WB == 0) &&bWBLademodus)
 //            bWBLademodus = Sonne
              { // Wallbox lädt nicht
@@ -1393,7 +1393,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 }
 //                    else WBchar6[1] = 2;
         }
-            if (fPower_WB > 0) {tWBtime = tE3DC;	 
+            if (fPower_WB > 0) {tWBtime = tE3DC;
                if (fPower_WB < 1000) iWBStatus = 30;
             } // WB Lädt, Zeitstempel updaten
             if ((fPower_WB > 1000) && not (bWBmaxLadestrom)) { // Wallbox lädt
@@ -1408,9 +1408,9 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 (WBchar6[1]<iMaxcurrent)){
                 WBchar6[1]++;
                 for (int X1 = 3; X1 < 20; X1++)
-                    
+
                 if ((iAvalPower > (X1*iWBMinimumPower/6)) && (WBchar6[1]<iMaxcurrent)) WBchar6[1]++; else break;
-                    
+
                 createRequestWBData(frameBuffer);
 //                if ((WBchar6[1]>16)&&(WBChar_alt<= 16)) iWBStatus = 30; else
                     iWBStatus = 12;
@@ -1426,7 +1426,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                 WBchar6[1]--;
                 for (int X1 = 2; X1 < 20; X1++)
                     if ((iAvalPower <= ((iWBMinimumPower/6)*-X1))&& (WBchar6[1]>7)) WBchar6[1]--; else break;
-                
+
                 createRequestWBData(frameBuffer);
                 WBChar_alt = WBchar6[1];
 //                if (WBchar6[1]>16) iWBStatus = 15; else // Länger warten bei hohen Stömen
@@ -1435,8 +1435,8 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
             } else
 // Bedingung zum Wallbox abschalten ermitteln
 //
-                
-                
+
+
             if ((fPower_WB>100)&&(
                                   ((iPower_Bat-fPower_Grid < (e3dc_config.maximumLadeleistung*-0.9))&&(fBatt_SOC < 94))
                 || ((fPower_Grid > 3000)&&(iPower_Bat<1000))   //Speicher > 94%
@@ -1457,7 +1457,7 @@ int WBProcess(SRscpFrameBuffer * frameBuffer) {
                         createRequestWBData(frameBuffer);
                     WBchar6[1]=5;
                     WBChar_alt = WBchar6[1];
-                    
+
                     if ((WBchar6[4] == 0) || (WBchar6[1] == 6))
                         iWBStatus = 7; else // Warten bis Neustart oder bei 6A
                         iWBStatus = 20;  // Warten bis Neustart
@@ -1795,7 +1795,7 @@ int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
         }
         case TAG_EMS_REMAINING_BAT_CHARGE_POWER: {    // response for TAG_EMS_SET_POWER
                     int32_t iPower = protocol->getValueAsInt32(response);
-                    
+
         //            printf(" SET %i\n", iPower);
                     break;
                 }
@@ -2257,7 +2257,7 @@ int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
                                     if (bWBStart) printf(" gestartet");
                                     if (bWBCharge) printf(" lädt");
                                     if (bWBStopped ) printf(" gestoppt");
-																	 
+
                                     printf(" Ladestromstärke %uA ",WBchar[2]);
                                     if (WBchar[2]==32) {
                                         bWBmaxLadestrom=true;
@@ -2267,13 +2267,13 @@ int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
                                     }
                                     break;
                                 }
-                                    
+
                                 case TAG_WB_EXTERN_DATA_LEN: {              // response for TAG_RSP_PARAM_1
                                     uint8_t iLen = protocol->getValueAsUChar8(&WBData[i]);
 
 //                                    printf(" WB EXTERN_DATA_LEN %u\n",iLen);
                                     break;
-                                    
+
                                 }
 
                                 default:
@@ -2281,14 +2281,14 @@ int handleResponseValue(RscpProtocol *protocol, SRscpValue *response)
                                     printf("Unknown WB tag %08X", WBData[i].tag);
                                     printf(" datatype %08X", WBData[i].dataType);
                             }
-                            
+
 /*                                    printf(" length %02X", WBData[i].length);
                                     printf(" data %02X", WBData[i].data[0]);
                                     printf("%02X", WBData[i].data[1]);
                                     printf("%02X", WBData[i].data[2]);
                                     printf("%02X\n", WBData[i].data[3]);
 */                        }
-                       
+
                             protocol->destroyValueData(WBData);
                         break;
 
