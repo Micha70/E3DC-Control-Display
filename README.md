@@ -2,8 +2,7 @@
 
 Prinzipiell gelten alle Hinweise von Eberhard, s.u..
 
-Wegen Verwendung von  fbtft_device läuft das Programm nicht auf dem neuesten Raspi Kernel!!!
-  --> bei mir wird aktuell 4.19.118+ verwendet.
+Lösung, da sich fbtft_device für Grafikausgabe in Raspi Buster Kernel geändert hat: https://www.raspberrypi.org/forums/viewtopic.php?f=107&t=281204&p=1843929#p1843929
 
 ## Displayansteuerung
 + Installation der Treiber für Displayansteuerung
