@@ -23,8 +23,8 @@ make
 ```
 --> weitere Konfiguration siehe unten
 
-wenn fatal error: bcm2835.h: No such file or directory
-# download the latest version of the library, say bcm2835-1.xx.tar.gz, then:
+--> wenn fatal error: bcm2835.h: No such file or directory
+download the latest version of the library, say bcm2835-1.xx.tar.gz, then:
 ```
 cd /home/pi/
 wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz     --> you can find the last version on http://www.airspayce.com/mikem/bcm2835/
