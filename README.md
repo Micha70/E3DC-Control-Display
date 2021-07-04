@@ -2,7 +2,11 @@
 
 Prinzipiell gelten alle Hinweise von Eberhard, s.u..
 
-Lösung, da sich fbtft_device für Grafikausgabe in Raspi Buster Kernel geändert hat: https://www.raspberrypi.org/forums/viewtopic.php?f=107&t=281204&p=1843929#p1843929
+## Probleme mit Displayansteuerung
+* Lösung, da sich fbtft_device für Grafikausgabe in Raspi Buster Kernel geändert hat: https://www.raspberrypi.org/forums/viewtopic.php?f=107&t=281204&p=1843929#p1843929
+
+* Wenn keine Diplay vorhanden, oder Probleme mit Grafik das Programm mit Startparameter -nodisplay starten.
+
 
 ## Displayansteuerung
 + Installation der Treiber für Displayansteuerung
